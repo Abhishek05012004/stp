@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 const orderItemSchema = new mongoose.Schema({
   productId: {
@@ -17,7 +17,7 @@ const orderItemSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-});
+})
 
 const orderSchema = new mongoose.Schema(
   {
@@ -25,6 +25,14 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+    },
+    customerName: {
+      type: String,
+      default: "Guest Customer",
+    },
+    customerEmail: {
+      type: String,
+      required: true,
     },
     items: [orderItemSchema],
     subtotal: {
@@ -47,7 +55,7 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
-);
+  },
+)
 
-module.exports = mongoose.model("Order", orderSchema);
+module.exports = mongoose.model("Order", orderSchema)

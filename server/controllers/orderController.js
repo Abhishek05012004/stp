@@ -8,6 +8,8 @@ const createOrder = async (req, res) => {
 
     const order = new Order({
       orderId: orderData.id,
+      customerName: orderData.customerName || "Guest Customer",
+      customerEmail: orderData.customerEmail,
       items: orderData.items.map((item) => ({
         productId: item.id,
         name: item.name,
@@ -41,6 +43,8 @@ const getOrderById = async (req, res) => {
     if (order) {
       res.json({
         id: order.orderId,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
         items: order.items.map((item) => ({
           id: item.productId,
           name: item.name,
@@ -68,6 +72,8 @@ const getAllOrders = async (req, res) => {
 
     const formattedOrders = orders.map((order) => ({
       id: order.orderId,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
       items: order.items,
       subtotal: order.subtotal,
       tax: order.tax,
@@ -164,6 +170,8 @@ const createOrderWithStockValidation = async (req, res) => {
         // Create the order
         const order = new Order({
           orderId: orderData.id,
+          customerName: orderData.customerName || "Guest Customer",
+          customerEmail: orderData.customerEmail,
           items: orderData.items.map((item) => ({
             productId: item.id,
             name: item.name,
