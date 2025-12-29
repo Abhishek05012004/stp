@@ -237,9 +237,15 @@ const Invoice = () => {
                     lineHeight: "1.5",
                   }}
                 >
-                  <p style={{ margin: "2px 0" }}>📧 support@tiptappay.com</p>
-                  <p style={{ margin: "2px 0" }}>📞 +91-9876-543-210</p>
-                  <p style={{ margin: "2px 0" }}>🏢 123 Tech Street, Digital City, India - 110001</p>
+                  <p style={{ margin: "2px 0" }}>📧 scantappay@gmail.com</p>
+                  <p style={{ margin: "2px 0" }}>📞 7575841397 / 8511231514</p>
+                  <p style={{ margin: "2px 0" }}>🏢 Office no. - 16, Digital Plaza, Mumbai - 400001</p>
+                  <p style={{ margin: "2px 0" }}>
+                    🌐 visit us:{" "}
+                    <a href="https://scan-tap-pay.vercel.app/" style={{ color: "white", textDecoration: "underline" }}>
+                      https://scan-tap-pay.vercel.app/
+                    </a>
+                  </p>
                 </div>
               </div>
 

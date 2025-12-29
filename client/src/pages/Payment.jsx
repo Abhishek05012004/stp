@@ -265,11 +265,15 @@ const Payment = () => {
     }
   }
 
-  const handlePaymentSuccess = async (orderId, transactionId = null) => {
+  const handlePaymentSuccess = async (orderId, transactionId) => {
     try {
+      setIsProcessing(true)
+
       const orderData = {
         id: orderId,
-        items: [...items],
+        customerEmail: customerEmail,
+        customerName: "Guest Customer",
+        items: items,
         total: getTotalINR(),
         tax: getTaxINR(),
         finalTotal: getFinalTotalINR(),
@@ -283,7 +287,6 @@ const Payment = () => {
         currency: "INR",
         transactionId: transactionId || "TXN" + Date.now(),
         paymentTime: new Date().toISOString(),
-        customerEmail: customerEmail,
       }
 
       console.log("💳 Processing payment with inventory management...")
