@@ -792,6 +792,24 @@ body {
   color: var(--info-dark);
 }
 
+/* out of stock blink animation */
+@keyframes blink-red {
+  0%,
+  100% {
+    background: var(--primary-color);
+    transform: scale(1);
+  }
+  50% {
+    background: var(--danger-color);
+    transform: scale(1.2);
+    box-shadow: 0 0 15px var(--danger-color);
+  }
+}
+
+.blink-danger {
+  animation: blink-red 0.3s ease-in-out 3;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {

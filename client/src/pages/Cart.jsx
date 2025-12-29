@@ -3,11 +3,42 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useCart } from "../utils/CartContext.jsx"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faArrowLeft, faShoppingCart, faTrashCan, faCreditCard, faFloppyDisk } from "@fortawesome/free-solid-svg-icons"
+import {
+  faArrowLeft,
+  faShoppingCart,
+  faTrashCan,
+  faCreditCard,
+  faFloppyDisk,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons"
+import toast from "../utils/toastUtils"
+import { useState, useEffect } from "react"
 
 const Cart = () => {
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCart()
   const navigate = useNavigate()
+  const [blinkingId, setBlinkingId] = useState(null)
+
+  useEffect(() => {
+    const handleBlink = (e) => {
+      setBlinkingId(e.detail.id)
+      setTimeout(() => setBlinkingId(null), 1000)
+    }
+    window.addEventListener("out-of-stock-blink", handleBlink)
+    return () => window.removeEventListener("out-of-stock-blink", handleBlink)
+  }, [])
+
+  const handleIncreaseQuantity = (item) => {
+    const maxStock = item.stock || 999
+    if (item.quantity >= maxStock) {
+      toast.error(`Only ${maxStock} units of ${item.name} available in stock!`)
+      // trigger custom event to blink the button
+      const event = new CustomEvent("out-of-stock-blink", { detail: { id: item.id } })
+      window.dispatchEvent(event)
+      return
+    }
+    updateQuantity(item.id, item.quantity + 1)
+  }
 
   const handleCheckout = () => {
     if (items.length > 0) {
@@ -75,50 +106,59 @@ const Cart = () => {
       </div>
 
       <div className="cart-container">
-        {items.map((item) => (
-          <div key={item.id} className="cart-item">
-            <img src={item.image || "/placeholder.svg"} alt={item.name} />
+        {items.map((item) => {
+          const isAtStockLimit = item.stock !== undefined && item.quantity >= item.stock
 
-            <div className="cart-item-details">
-              <div className="cart-item-name">{item.name}</div>
-              <div className="cart-item-price">₹{item.price.toFixed(2)} each</div>
-              <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-                Subtotal: ₹{(item.price * item.quantity).toFixed(2)}
+          return (
+            <div key={item.id} className="cart-item">
+              <img src={item.image || "/placeholder.svg"} alt={item.name} />
+
+              <div className="cart-item-details">
+                <div className="cart-item-name">{item.name}</div>
+                <div className="cart-item-price">₹{item.price.toFixed(2)} each</div>
+                {isAtStockLimit && (
+                  <div style={{ fontSize: "11px", color: "#ef4444", fontWeight: "bold", marginTop: "2px" }}>
+                    <FontAwesomeIcon icon={faTriangleExclamation} /> Out of Stock (Limit Reached)
+                  </div>
+                )}
+                <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+                  Subtotal: ₹{(item.price * item.quantity).toFixed(2)}
+                </div>
+
+                <div className="quantity-controls">
+                  <button
+                    className={`quantity-btn ${item.quantity <= 1 ? "disabled" : ""}`}
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    disabled={item.quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <span
+                    style={{
+                      margin: "0 1rem",
+                      fontWeight: "bold",
+                      minWidth: "30px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {item.quantity}
+                  </span>
+                  <button
+                    className={`quantity-btn ${isAtStockLimit ? "out-of-stock" : ""} ${blinkingId === item.id ? "blink-danger" : ""}`}
+                    onClick={() => handleIncreaseQuantity(item)}
+                    title={isAtStockLimit ? "Out of Stock" : "Increase Quantity"}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
 
-              <div className="quantity-controls">
-                <button
-                  className="quantity-btn"
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                  disabled={item.quantity <= 1}
-                  style={{
-                    opacity: item.quantity <= 1 ? 0.5 : 1,
-                    cursor: item.quantity <= 1 ? "not-allowed" : "pointer",
-                  }}
-                >
-                  -
-                </button>
-                <span
-                  style={{
-                    margin: "0 1rem",
-                    fontWeight: "bold",
-                    minWidth: "30px",
-                    textAlign: "center",
-                  }}
-                >
-                  {item.quantity}
-                </span>
-                <button className="quantity-btn" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                  +
-                </button>
-              </div>
+              <button className="remove-btn" onClick={() => removeItem(item.id)}>
+                <FontAwesomeIcon icon={faTrashCan} /> Remove
+              </button>
             </div>
-
-            <button className="remove-btn" onClick={() => removeItem(item.id)}>
-              <FontAwesomeIcon icon={faTrashCan} /> Remove
-            </button>
-          </div>
-        ))}
+          )
+        })}
 
         <div className="cart-total">
           <div style={{ marginBottom: "1rem", fontSize: "16px" }}>
