@@ -1,14 +1,8 @@
 // Authentication utility functions
+import { API_BASE_URL } from "./apiConfig"
 
 // Get API URL based on environment
-export const getApiBaseUrl = () => {
-  // Use deployed URL in production, local URL in development
-  if (import.meta.env.VITE_NODE_ENV === 'production') {
-    return import.meta.env.VITE_DEPLOYED_API_URL || 'https://stp-rust.vercel.app/api'
-  } else {
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-  }
-}
+export const getApiBaseUrl = () => API_BASE_URL
 
 // Get stored admin token
 export const getAdminToken = () => {
@@ -37,14 +31,16 @@ export const clearAdminAuth = () => {
 // Verify token with server
 export const verifyAdminToken = async (apiUrl = null) => {
   const token = getAdminToken()
-  const baseUrl = apiUrl || getApiBaseUrl()
+  const baseUrl = apiUrl || API_BASE_URL
 
   if (!token) {
     return { valid: false, admin: null }
   }
 
   try {
-    const response = await fetch(`${baseUrl}/auth/verify`, {
+    const verifyUrl = `${baseUrl}${baseUrl.endsWith("/") ? "" : "/"}auth/verify`.replace("//auth", "/auth")
+
+    const response = await fetch(verifyUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -73,7 +69,7 @@ export const verifyAdminToken = async (apiUrl = null) => {
 // Make authenticated API request
 export const makeAuthenticatedRequest = async (url, options = {}) => {
   const token = getAdminToken()
-  const baseUrl = getApiBaseUrl()
+  const baseUrl = API_BASE_URL
 
   if (!token) {
     throw new Error("No authentication token found")
@@ -92,7 +88,8 @@ export const makeAuthenticatedRequest = async (url, options = {}) => {
     },
   }
 
-  const response = await fetch(`${baseUrl}${url}`, requestOptions)
+  const sanitizedPath = url.startsWith("/") ? url : `/${url}`
+  const response = await fetch(`${baseUrl}${sanitizedPath}`, requestOptions)
 
   // Handle unauthorized responses
   if (response.status === 401) {
@@ -108,10 +105,11 @@ export const makeAuthenticatedRequest = async (url, options = {}) => {
 export const logoutAdmin = async () => {
   try {
     const token = getAdminToken()
-    const baseUrl = getApiBaseUrl()
+    const baseUrl = API_BASE_URL
 
     if (token) {
-      await fetch(`${baseUrl}/auth/logout`, {
+      const logoutUrl = `${baseUrl}${baseUrl.endsWith("/") ? "" : "/"}auth/logout`.replace("//auth", "/auth")
+      await fetch(logoutUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

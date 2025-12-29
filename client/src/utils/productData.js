@@ -1,34 +1,33 @@
 // Environment-based API URL configuration
-const DEPLOYED_API_URL = "https://stp-rust.vercel.app/api"
-const LOCAL_API_URL = "http://localhost:5000/api"
+import { API_BASE_URL, getFullUrl } from "./apiConfig"
 
 // Auto-detect environment or allow manual override
-const getApiBaseUrl = () => {
-  // Check if we're running on localhost
-  const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+// const getApiBaseUrl = () => {
+//   // Check if we're running on localhost
+//   const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
 
-  // Check for manual override in localStorage (for testing)
-  const manualOverride = localStorage.getItem("api-environment")
+//   // Check for manual override in localStorage (for testing)
+//   const manualOverride = localStorage.getItem("api-environment")
 
-  if (manualOverride === "local") {
-    console.log("🔧 Using LOCAL API (manual override):", LOCAL_API_URL)
-    return LOCAL_API_URL
-  } else if (manualOverride === "deployed") {
-    console.log("🔧 Using DEPLOYED API (manual override):", DEPLOYED_API_URL)
-    return DEPLOYED_API_URL
-  }
+//   if (manualOverride === "local") {
+//     console.log("🔧 Using LOCAL API (manual override):", LOCAL_API_URL)
+//     return LOCAL_API_URL
+//   } else if (manualOverride === "deployed") {
+//     console.log("🔧 Using DEPLOYED API (manual override):", DEPLOYED_API_URL)
+//     return DEPLOYED_API_URL
+//   }
 
-  // Auto-detect based on current environment
-  if (isLocalhost) {
-    console.log("🏠 Auto-detected LOCAL environment, using:", LOCAL_API_URL)
-    return LOCAL_API_URL
-  } else {
-    console.log("🌐 Auto-detected DEPLOYED environment, using:", DEPLOYED_API_URL)
-    return DEPLOYED_API_URL
-  }
-}
+//   // Auto-detect based on current environment
+//   if (isLocalhost) {
+//     console.log("🏠 Auto-detected LOCAL environment, using:", LOCAL_API_URL)
+//     return LOCAL_API_URL
+//   } else {
+//     console.log("🌐 Auto-detected DEPLOYED environment, using:", DEPLOYED_API_URL)
+//     return DEPLOYED_API_URL
+//   }
+// }
 
-const API_BASE_URL = getApiBaseUrl()
+// const API_BASE_URL = getApiBaseUrl()
 
 // Helper functions to manually switch API environment (for testing)
 export const switchToLocalAPI = () => {
@@ -54,8 +53,9 @@ export const getCurrentAPIUrl = () => API_BASE_URL
 // Test API connection on load
 const testConnection = async () => {
   try {
-    console.log("🔄 Testing API connection to:", API_BASE_URL)
-    const response = await fetch(`${API_BASE_URL}/health`, {
+    const healthUrl = getFullUrl("/health")
+    console.log("🔄 Testing API connection to:", healthUrl)
+    const response = await fetch(healthUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -99,8 +99,9 @@ import { getAdminToken } from "./authUtils.js"
 
 export const getProductById = async (id) => {
   try {
-    console.log(`🔍 Fetching product from: ${API_BASE_URL}/product/${id}`)
-    const response = await fetch(`${API_BASE_URL}/product/${id}`, {
+    const url = getFullUrl(`/product/${id}`)
+    console.log(`🔍 Fetching product from: ${url}`)
+    const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -122,8 +123,9 @@ export const getProductById = async (id) => {
 
 export const getAllProducts = async () => {
   try {
-    console.log(`📦 Fetching all products from: ${API_BASE_URL}/products`)
-    const response = await fetch(`${API_BASE_URL}/products`, {
+    const url = getFullUrl("/products")
+    console.log(`📦 Fetching all products from: ${url}`)
+    const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -167,7 +169,8 @@ export const addProduct = async (product) => {
       headers.Authorization = `Bearer ${token}`
     }
 
-    const response = await fetch(`${API_BASE_URL}/products`, {
+    const url = getFullUrl("/products")
+    const response = await fetch(url, {
       method: "POST",
       headers,
       body: JSON.stringify(product),
@@ -197,7 +200,8 @@ export const updateProductStock = async (productId, stock) => {
       headers.Authorization = `Bearer ${token}`
     }
 
-    const response = await fetch(`${API_BASE_URL}/product/${productId}/stock`, {
+    const url = getFullUrl(`/product/${productId}/stock`)
+    const response = await fetch(url, {
       method: "PUT",
       headers,
       body: JSON.stringify({ stock }),
@@ -218,8 +222,9 @@ export const updateProductStock = async (productId, stock) => {
 
 export const validateStockForCart = async (productId, quantity) => {
   try {
+    const url = getFullUrl("/product/validate-stock")
     console.log(`🔍 Validating stock for product ${productId}, quantity: ${quantity}`)
-    const response = await fetch(`${API_BASE_URL}/product/validate-stock`, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -244,11 +249,11 @@ export const validateStockForCart = async (productId, quantity) => {
 
 export const validateBulkStock = async (items) => {
   try {
-    const endpoint = `${API_BASE_URL}/products/validate-bulk-stock`
+    const url = getFullUrl("/products/validate-bulk-stock")
     console.log("🔍 Validating bulk stock for items:", items)
-    console.log("🌐 API endpoint:", endpoint)
+    console.log("🌐 API endpoint:", url)
 
-    const response = await fetch(endpoint, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -306,8 +311,9 @@ export const validateBulkStock = async (items) => {
 
 export const createOrder = async (orderData) => {
   try {
-    console.log("💳 Creating order at:", `${API_BASE_URL}/orders`)
-    const response = await fetch(`${API_BASE_URL}/orders`, {
+    const url = getFullUrl("/orders")
+    console.log("💳 Creating order at:", url)
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -330,8 +336,9 @@ export const createOrder = async (orderData) => {
 
 export const createOrderWithStockValidation = async (orderData) => {
   try {
-    console.log("💳 Creating order with stock validation at:", `${API_BASE_URL}/orders/with-stock-validation`)
-    const response = await fetch(`${API_BASE_URL}/orders/with-stock-validation`, {
+    const url = getFullUrl("/orders/with-stock-validation")
+    console.log("💳 Creating order with stock validation at:", url)
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -356,7 +363,8 @@ export const createOrderWithStockValidation = async (orderData) => {
 
 export const getOrderById = async (orderId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/order/${orderId}`)
+    const url = getFullUrl(`/order/${orderId}`)
+    const response = await fetch(url)
     if (response.ok) {
       const order = await response.json()
       console.log("✅ Order fetched successfully:", order)
@@ -373,8 +381,9 @@ export const getOrderById = async (orderId) => {
 
 export const cancelOrderAndRestoreStock = async (orderId) => {
   try {
+    const url = getFullUrl(`/order/${orderId}/cancel`)
     console.log(`🔄 Cancelling order and restoring stock: ${orderId}`)
-    const response = await fetch(`${API_BASE_URL}/order/${orderId}/cancel`, {
+    const response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -398,7 +407,8 @@ export const cancelOrderAndRestoreStock = async (orderId) => {
 
 export const getAllOrders = async () => {
   try {
-    console.log(`📋 Fetching all orders from: ${API_BASE_URL}/orders`)
+    const url = getFullUrl("/orders")
+    console.log(`📋 Fetching all orders from: ${url}`)
     const token = getAdminToken()
     const headers = {
       "Content-Type": "application/json",
@@ -408,7 +418,7 @@ export const getAllOrders = async () => {
       headers.Authorization = `Bearer ${token}`
     }
 
-    const response = await fetch(`${API_BASE_URL}/orders`, {
+    const response = await fetch(url, {
       headers,
     })
 

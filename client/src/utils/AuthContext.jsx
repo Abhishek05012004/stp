@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useReducer, useEffect } from "react"
 import { verifyAdminToken, clearAdminAuth, getAdminToken, getAdminData } from "./authUtils"
+import { API_BASE_URL, getFullUrl } from "./apiConfig"
 
 const AuthContext = createContext()
 
@@ -104,16 +105,6 @@ const initialState = {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
-  // Get API URL based on environment
-  const getApiBaseUrl = () => {
-    // Use deployed URL in production, local URL in development
-    if (import.meta.env.VITE_NODE_ENV === 'production') {
-      return import.meta.env.VITE_DEPLOYED_API_URL || 'https://stp-rust.vercel.app/api'
-    } else {
-      return import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-    }
-  }
-
   // Check for existing authentication on mount
   useEffect(() => {
     const checkExistingAuth = async () => {
@@ -124,8 +115,7 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: "VERIFY_START" })
 
         try {
-          const apiUrl = getApiBaseUrl()
-          const { valid, admin } = await verifyAdminToken(apiUrl)
+          const { valid, admin } = await verifyAdminToken(API_BASE_URL)
 
           if (valid && admin) {
             dispatch({
@@ -154,10 +144,10 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: "LOGIN_START" })
 
     try {
-      const apiUrl = getApiBaseUrl()
-      console.log("Attempting login to:", `${apiUrl}/auth/login`)
-      
-      const response = await fetch(`${apiUrl}/auth/login`, {
+      const loginUrl = getFullUrl("/auth/login")
+      console.log("Attempting login to:", loginUrl)
+
+      const response = await fetch(loginUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -197,15 +187,15 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Login error:", error)
-      
+
       let errorMessage = "Network error. Please check your connection and try again."
-      
+
       if (error.message.includes("Failed to fetch")) {
         errorMessage = "Cannot connect to the server. Please make sure the backend is running."
       } else if (error.message.includes("HTTP error")) {
         errorMessage = `Server error: ${error.message}`
       }
-      
+
       dispatch({
         type: "LOGIN_FAILURE",
         payload: errorMessage,
@@ -219,9 +209,8 @@ export const AuthProvider = ({ children }) => {
       const token = getAdminToken()
 
       if (token) {
-        // Call logout endpoint
-        const apiUrl = getApiBaseUrl()
-        await fetch(`${apiUrl}/auth/logout`, {
+        const logoutUrl = getFullUrl("/auth/logout")
+        await fetch(logoutUrl, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -260,8 +249,7 @@ export const AuthProvider = ({ children }) => {
     if (!state.isAuthenticated) return
 
     try {
-      const apiUrl = getApiBaseUrl()
-      const { valid, admin } = await verifyAdminToken(apiUrl)
+      const { valid, admin } = await verifyAdminToken(API_BASE_URL)
 
       if (valid && admin) {
         dispatch({
