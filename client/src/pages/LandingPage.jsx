@@ -39,7 +39,7 @@ const LandingPage = () => {
   }, []);
 
   const handleStartShopping = () => {
-    window.location.href = "https://scan-tap-pay/scanner";
+    window.location.href = "https://scan-tap-pay.vercel.app/scanner";
   };
 
   const handlePlayVideo = () => {
