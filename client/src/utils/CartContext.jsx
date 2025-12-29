@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useReducer, useEffect } from "react"
-import { validateStockForCart } from "./productData.js"
+import { validateStockForCart, getProductById } from "./productData.js"
 
 const CartContext = createContext()
 
@@ -52,6 +52,14 @@ const cartReducer = (state, action) => {
           .filter((item) => item.quantity > 0),
       }
 
+    case "UPDATE_ITEM_STOCK":
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.payload.id ? { ...item, stock: action.payload.stock } : item,
+        ),
+      }
+
     case "CLEAR_CART":
       return {
         ...state,
@@ -74,20 +82,39 @@ export const CartProvider = ({ children }) => {
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    try {
-      const savedCart = localStorage.getItem("qr-scanner-cart")
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart)
-        if (Array.isArray(parsedCart) && parsedCart.length > 0) {
-          dispatch({ type: "LOAD_CART", payload: parsedCart })
-          console.log("✅ Cart loaded from localStorage:", parsedCart.length, "items")
+    const loadCartWithStockRefresh = async () => {
+      try {
+        const savedCart = localStorage.getItem("qr-scanner-cart")
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart)
+          if (Array.isArray(parsedCart) && parsedCart.length > 0) {
+            dispatch({ type: "LOAD_CART", payload: parsedCart })
+            console.log("✅ Cart loaded from localStorage:", parsedCart.length, "items")
+
+            for (const item of parsedCart) {
+              try {
+                const freshProduct = await getProductById(item.id)
+                if (freshProduct && freshProduct.stock !== item.stock) {
+                  console.log(`[v0] Refreshing stock for ${item.id}: ${item.stock} -> ${freshProduct.stock}`)
+                  dispatch({
+                    type: "UPDATE_ITEM_STOCK",
+                    payload: { id: item.id, stock: freshProduct.stock },
+                  })
+                }
+              } catch (error) {
+                console.error(`[v0] Failed to refresh stock for ${item.id}:`, error)
+              }
+            }
+          }
         }
+      } catch (error) {
+        console.error("Error loading cart from localStorage:", error)
+        // Clear corrupted data
+        localStorage.removeItem("qr-scanner-cart")
       }
-    } catch (error) {
-      console.error("Error loading cart from localStorage:", error)
-      // Clear corrupted data
-      localStorage.removeItem("qr-scanner-cart")
     }
+
+    loadCartWithStockRefresh()
   }, [])
 
   // Save cart to localStorage whenever it changes
@@ -124,6 +151,11 @@ export const CartProvider = ({ children }) => {
             const event = new CustomEvent("out-of-stock-blink", { detail: { id } })
             window.dispatchEvent(event)
             return // Prevent increasing quantity beyond stock
+          } else {
+            dispatch({
+              type: "UPDATE_ITEM_STOCK",
+              payload: { id, stock: validation.availableStock },
+            })
           }
         } catch (error) {
           console.error("Error validating stock during update:", error)

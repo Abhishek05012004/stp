@@ -29,7 +29,7 @@ const Cart = () => {
   }, [])
 
   const handleIncreaseQuantity = (item) => {
-    const maxStock = item.stock || 999
+    const maxStock = typeof item.stock === "number" ? item.stock : 999
     if (item.quantity >= maxStock) {
       toast.error(`Only ${maxStock} units of ${item.name} available in stock!`)
       // trigger custom event to blink the button
@@ -107,7 +107,7 @@ const Cart = () => {
 
       <div className="cart-container">
         {items.map((item) => {
-          const isAtStockLimit = item.stock !== undefined && item.quantity >= item.stock
+          const isAtStockLimit = typeof item.stock === "number" && item.stock >= 0 ? item.quantity >= item.stock : false
 
           return (
             <div key={item.id} className="cart-item">

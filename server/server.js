@@ -25,43 +25,46 @@ const PORT = process.env.PORT || 5000
 // Connect to MongoDB
 connectDB()
 
-// CORS Configuration
-const allowedOrigins = [
-  'https://scan-tap-pay.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5173',
-  undefined // Allow requests with no origin
-];
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : [
+      'https://scan-tap-pay.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ];
+
+// Always allow requests with no origin (like Postman, mobile apps)
+allowedOrigins.push(undefined);
 
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, Postman)
-    if (!origin) return callback(null, true);
-    
+    if (!origin) return callback(null, true)
+
     if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
+      callback(null, true)
     } else {
-      console.log('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
+      console.log("CORS blocked origin:", origin)
+      callback(new Error("Not allowed by CORS"))
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-};
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+}
 
 // Apply CORS middleware
-app.use(cors(corsOptions));
+app.use(cors(corsOptions))
 
 // Handle preflight requests
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions))
 
 // Middleware
 app.use(express.json())
 
 // Logging middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - Origin: ${req.headers.origin || 'No Origin'}`)
+  console.log(`${req.method} ${req.path} - Origin: ${req.headers.origin || "No Origin"}`)
   next()
 })
 
@@ -78,8 +81,8 @@ app.get("/", (req, res) => {
       payment: "/api/payment",
     },
     cors: {
-      allowedOrigins: allowedOrigins.filter(origin => origin),
-      currentOrigin: req.headers.origin || 'Not specified'
+      allowedOrigins: allowedOrigins.filter((origin) => origin),
+      currentOrigin: req.headers.origin || "Not specified",
     },
     timestamp: new Date().toISOString(),
   })
@@ -139,8 +142,8 @@ app.get("/api/health", (req, res) => {
     message: "Server is running with MongoDB",
     database: "MongoDB",
     cors: {
-      allowedOrigins: allowedOrigins.filter(origin => origin),
-      currentOrigin: req.headers.origin || 'Not specified'
+      allowedOrigins: allowedOrigins.filter((origin) => origin),
+      currentOrigin: req.headers.origin || "Not specified",
     },
     timestamp: new Date().toISOString(),
   })
@@ -155,9 +158,9 @@ app.get("/api/db-status", async (req, res) => {
     host: mongoose.connection.host,
     name: mongoose.connection.name,
     cors: {
-      allowedOrigins: allowedOrigins.filter(origin => origin),
-      currentOrigin: req.headers.origin || 'Not specified'
-    }
+      allowedOrigins: allowedOrigins.filter((origin) => origin),
+      currentOrigin: req.headers.origin || "Not specified",
+    },
   })
 })
 
@@ -187,12 +190,12 @@ app.get("/api/stats", authenticateAdmin, async (req, res) => {
 
 // 404 handler
 app.use("*", (req, res) => {
-  console.log(`404 - Route not found: ${req.method} ${req.originalUrl} - Origin: ${req.headers.origin || 'No Origin'}`)
+  console.log(`404 - Route not found: ${req.method} ${req.originalUrl} - Origin: ${req.headers.origin || "No Origin"}`)
   res.status(404).json({
     error: "Route not found",
     message: `The route ${req.originalUrl} does not exist`,
     method: req.method,
-    origin: req.headers.origin || 'Not specified',
+    origin: req.headers.origin || "Not specified",
     availableRoutes: [
       "GET /",
       "GET /api/health",
@@ -210,22 +213,22 @@ app.use("*", (req, res) => {
 // Error handler
 app.use((error, req, res, next) => {
   console.error("Server Error:", error.message)
-  
+
   // Handle CORS errors specifically
-  if (error.message.includes('CORS')) {
+  if (error.message.includes("CORS")) {
     return res.status(403).json({
       error: "CORS Error",
       message: error.message,
-      allowedOrigins: allowedOrigins.filter(origin => origin),
-      yourOrigin: req.headers.origin || 'Not specified',
-      timestamp: new Date().toISOString()
-    });
+      allowedOrigins: allowedOrigins.filter((origin) => origin),
+      yourOrigin: req.headers.origin || "Not specified",
+      timestamp: new Date().toISOString(),
+    })
   }
-  
+
   res.status(500).json({
     error: "Internal Server Error",
     message: error.message,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 })
 
@@ -237,7 +240,10 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`)
     console.log(`📦 Database: MongoDB`)
-    console.log(`🌍 CORS Allowed Origins:`, allowedOrigins.filter(origin => origin))
+    console.log(
+      `🌍 CORS Allowed Origins:`,
+      allowedOrigins.filter((origin) => origin),
+    )
     console.log(`🔗 API endpoints available at http://localhost:${PORT}/api/`)
     console.log(`🔗 Health check: http://localhost:${PORT}/api/health`)
   })

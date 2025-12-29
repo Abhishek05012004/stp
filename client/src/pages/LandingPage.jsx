@@ -1,16 +1,17 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { updatePageMeta, scrollToTop } from "../utils/pageUtils.js";
-import "./LandingPage.css";
+import { useState, useEffect, useRef } from "react"
+import { motion } from "framer-motion"
+import { updatePageMeta, scrollToTop } from "../utils/pageUtils.js"
+import { useNavigate } from "react-router-dom";
+import "./LandingPage.css"
 
 // Import Font Awesome icons
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faQrcode, 
-  faMobileScreen, 
-  faBolt, 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import {
+  faQrcode,
+  faMobileScreen,
+  faBolt,
   faShieldHalved,
   faEnvelope,
   faChartLine,
@@ -23,41 +24,42 @@ import {
   faRocket,
   faUsers,
   faClock,
-  faStar
-} from '@fortawesome/free-solid-svg-icons';
+  faStar,
+} from "@fortawesome/free-solid-svg-icons"
 
 const LandingPage = () => {
-  const [showVideo, setShowVideo] = useState(false);
-  const videoRef = useRef(null);
+  const [showVideo, setShowVideo] = useState(false)
+  const videoRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     updatePageMeta(
       "Tip Tap Pay - Instant QR & NFC Shopping Experience",
-      "Scan QR codes or tap NFC tags to instantly add products to cart and make secure payments. Experience seamless shopping!"
-    );
-    scrollToTop();
-  }, []);
+      "Scan QR codes or tap NFC tags to instantly add products to cart and make secure payments. Experience seamless shopping!",
+    )
+    scrollToTop()
+  }, [])
 
   const handleStartShopping = () => {
-    window.location.href = "https://scan-tap-pay.vercel.app/scanner";
-  };
+    navigate("/scanner")
+  }
 
   const handlePlayVideo = () => {
-    setShowVideo(true);
+    setShowVideo(true)
     if (videoRef.current) {
       setTimeout(() => {
-        videoRef.current?.play();
-      }, 300);
+        videoRef.current?.play()
+      }, 300)
     }
-  };
+  }
 
   const handleCloseVideo = () => {
     if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
     }
-    setShowVideo(false);
-  };
+    setShowVideo(false)
+  }
 
   const features = [
     {
@@ -90,77 +92,65 @@ const LandingPage = () => {
       title: "Real-time Tracking",
       description: "Track all your purchases and payments in real-time",
     },
-  ];
+  ]
 
   const mainFeatures = [
     {
       title: "QR Code Shopping Feature",
-      description: "Kisi bhi product ka QR code scan karein, product aapke cart mein automatically add ho jayega aur aap proceed to payment kar sakte hain.",
+      description:
+        "Kisi bhi product ka QR code scan karein, product aapke cart mein automatically add ho jayega aur aap proceed to payment kar sakte hain.",
       items: [
         "QR code scanning for instant product identification",
         "Automatically adds to shopping cart",
         "Proceed to secure online payment",
         "Easy and fast checkout process",
         "Digital receipt generation",
-        "Email confirmation sent immediately"
-      ]
+        "Email confirmation sent immediately",
+      ],
     },
     {
       title: "NFC Tap & Pay Feature",
-      description: "NFC-enabled phone se product tag par tap karein, instant purchase complete karein aur automatic bill generate ho jayega.",
+      description:
+        "NFC-enabled phone se product tag par tap karein, instant purchase complete karein aur automatic bill generate ho jayega.",
       items: [
         "Tap NFC tags with your phone",
         "Instant product addition to cart",
         "Contactless payment processing",
         "Auto-generated bill PDF",
         "Email delivery of receipt",
-        "Transaction history tracking"
-      ]
-    }
-  ];
+        "Transaction history tracking",
+      ],
+    },
+  ]
 
   const steps = [
     {
       number: "01",
       title: "Scan QR Code",
       description: "Product ke QR code ko apne phone se scan karein. Product details automatically fetch ho jayenge.",
-      features: [
-        "Instant QR recognition",
-        "Product info auto-filled",
-        "Price & details shown",
-        "One-tap add to cart"
-      ],
+      features: ["Instant QR recognition", "Product info auto-filled", "Price & details shown", "One-tap add to cart"],
     },
     {
       number: "02",
       title: "Add to Cart",
-      description: "Product aapke shopping cart mein automatically add ho jayega. Quantity aur options adjust kar sakte hain.",
-      features: [
-        "Automatic cart addition",
-        "Quantity adjustment",
-        "Price calculation",
-        "Cart management"
-      ],
+      description:
+        "Product aapke shopping cart mein automatically add ho jayega. Quantity aur options adjust kar sakte hain.",
+      features: ["Automatic cart addition", "Quantity adjustment", "Price calculation", "Cart management"],
     },
     {
       number: "03",
       title: "Pay Online",
       description: "Secure payment gateway se online payment complete karein. Instant confirmation milega.",
-      features: [
-        "Multiple payment options",
-        "Secure transaction",
-        "Instant confirmation",
-        "Digital receipt"
-      ],
+      features: ["Multiple payment options", "Secure transaction", "Instant confirmation", "Digital receipt"],
     },
-  ];
+  ]
 
   const stats = [
     { number: "10K+", label: "Products", icon: <FontAwesomeIcon icon={faShoppingCart} /> },
     { number: "5K+", label: "Happy Users", icon: <FontAwesomeIcon icon={faUsers} /> },
     { number: "99.9%", label: "Uptime", icon: <FontAwesomeIcon icon={faClock} /> },
     { number: "4.9/5", label: "Rating", icon: <FontAwesomeIcon icon={faStar} /> },
-  ];
+  ]
 
   return (
     <div className="landing-page">
@@ -180,28 +170,22 @@ const LandingPage = () => {
               <span className="hero-title-gradient"> Tap & Scan</span>
             </h1>
             <p className="hero-description">
-              QR code scan karein ya NFC tag tap karein - product instantly cart mein add ho jayega 
-              aur secure payment se purchase complete karein. Bill automatically generate hoga.
+              QR code scan karein ya NFC tag tap karein - product instantly cart mein add ho jayega aur secure payment
+              se purchase complete karein. Bill automatically generate hoga.
             </p>
-            
+
             <div className="hero-actions">
-              <button 
-                onClick={handleStartShopping}
-                className="hero-button hero-button-primary"
-              >
+              <button onClick={handleStartShopping} className="hero-button hero-button-primary">
                 <FontAwesomeIcon icon={faShoppingCart} />
                 Start Shopping
               </button>
-              
-              <button 
-                onClick={handlePlayVideo}
-                className="hero-button hero-button-secondary"
-              >
+
+              <button onClick={handlePlayVideo} className="hero-button hero-button-secondary">
                 <FontAwesomeIcon icon={faPlayCircle} />
                 Watch Demo
               </button>
             </div>
-            
+
             <div className="hero-stats">
               {stats.map((stat, index) => (
                 <div key={index} className="hero-stat">
@@ -211,7 +195,7 @@ const LandingPage = () => {
               ))}
             </div>
           </motion.div>
-          
+
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
@@ -227,15 +211,29 @@ const LandingPage = () => {
               </div>
               <div className="hero-card-content">
                 {[
-                  { icon: <FontAwesomeIcon icon={faCamera} />, title: "Scan QR Code", description: "Product QR scan karein" },
-                  { icon: <FontAwesomeIcon icon={faShoppingCart} />, title: "Add to Cart", description: "Automatically cart mein jayega" },
-                  { icon: <FontAwesomeIcon icon={faCreditCard} />, title: "Pay Online", description: "Secure payment complete karein" },
-                  { icon: <FontAwesomeIcon icon={faReceipt} />, title: "Get Receipt", description: "Email par bill aa jayega" },
+                  {
+                    icon: <FontAwesomeIcon icon={faCamera} />,
+                    title: "Scan QR Code",
+                    description: "Product QR scan karein",
+                  },
+                  {
+                    icon: <FontAwesomeIcon icon={faShoppingCart} />,
+                    title: "Add to Cart",
+                    description: "Automatically cart mein jayega",
+                  },
+                  {
+                    icon: <FontAwesomeIcon icon={faCreditCard} />,
+                    title: "Pay Online",
+                    description: "Secure payment complete karein",
+                  },
+                  {
+                    icon: <FontAwesomeIcon icon={faReceipt} />,
+                    title: "Get Receipt",
+                    description: "Email par bill aa jayega",
+                  },
                 ].map((item, index) => (
                   <div key={index} className="hero-card-item">
-                    <div className="hero-card-icon-small">
-                      {item.icon}
-                    </div>
+                    <div className="hero-card-icon-small">{item.icon}</div>
                     <div className="hero-card-text">
                       <h4>{item.title}</h4>
                       <p>{item.description}</p>
@@ -253,11 +251,9 @@ const LandingPage = () => {
         <div className="section-header">
           <span className="section-subtitle">Our Features</span>
           <h2 className="section-title">Major Shopping Features</h2>
-          <p className="section-description">
-            Experience seamless shopping with our advanced QR and NFC technology
-          </p>
+          <p className="section-description">Experience seamless shopping with our advanced QR and NFC technology</p>
         </div>
-        
+
         <div className="features-grid">
           {features.map((feature, index) => (
             <motion.div
@@ -268,9 +264,7 @@ const LandingPage = () => {
               viewport={{ once: true }}
               className="feature-card"
             >
-              <div className="feature-icon-wrapper">
-                {feature.icon}
-              </div>
+              <div className="feature-icon-wrapper">{feature.icon}</div>
               <h3 className="feature-title">{feature.title}</h3>
               <p className="feature-description">{feature.description}</p>
             </motion.div>
@@ -287,7 +281,7 @@ const LandingPage = () => {
             Hamare do major features jo aapki shopping experience ko transform karenge
           </p>
         </div>
-        
+
         <div className="steps-container">
           {mainFeatures.map((feature, index) => (
             <div key={index} className="step">
@@ -318,11 +312,9 @@ const LandingPage = () => {
         <div className="section-header">
           <span className="section-subtitle">Simple Process</span>
           <h2 className="section-title">How It Works</h2>
-          <p className="section-description">
-            Shopping made simple in just 3 easy steps
-          </p>
+          <p className="section-description">Shopping made simple in just 3 easy steps</p>
         </div>
-        
+
         <div className="steps-container">
           {steps.map((step, index) => (
             <div key={index} className="step">
@@ -359,24 +351,23 @@ const LandingPage = () => {
           >
             <h2 className="cta-title">Ready to Experience?</h2>
             <p className="cta-description">
-              Join thousands of users who are already enjoying seamless shopping. 
-              No setup required, start instantly!
+              Join thousands of users who are already enjoying seamless shopping. No setup required, start instantly!
             </p>
-            
-            <div className="hero-actions" style={{ justifyContent: 'center' }}>
-              <button 
+
+            <div className="hero-actions" style={{ justifyContent: "center" }}>
+              <button
                 onClick={handleStartShopping}
                 className="hero-button hero-button-primary"
-                style={{ background: 'white', color: '#2563eb' }}
+                style={{ background: "white", color: "#2563eb" }}
               >
                 <FontAwesomeIcon icon={faRocket} />
                 Start Shopping Now
               </button>
-              
-              <button 
+
+              <button
                 onClick={handlePlayVideo}
                 className="hero-button hero-button-secondary"
-                style={{ borderColor: 'rgba(255, 255, 255, 0.3)', color: 'white' }}
+                style={{ borderColor: "rgba(255, 255, 255, 0.3)", color: "white" }}
               >
                 <FontAwesomeIcon icon={faPlayCircle} />
                 Watch Full Demo
@@ -391,12 +382,10 @@ const LandingPage = () => {
         <div className="footer-content">
           <h2 className="footer-title">Tip Tap Pay</h2>
           <p className="footer-description">
-            Experience the future of shopping with instant QR scanning and NFC tap technology. 
-            Making shopping faster, smarter, and more secure.
+            Experience the future of shopping with instant QR scanning and NFC tap technology. Making shopping faster,
+            smarter, and more secure.
           </p>
-          <div className="footer-copyright">
-            © {new Date().getFullYear()} Tip Tap Pay. All rights reserved.
-          </div>
+          <div className="footer-copyright">© {new Date().getFullYear()} Tip Tap Pay. All rights reserved.</div>
         </div>
       </footer>
 
@@ -408,12 +397,7 @@ const LandingPage = () => {
               ×
             </button>
             <div className="video-container">
-              <video 
-                ref={videoRef}
-                controls 
-                autoPlay
-                style={{ width: '100%', height: 'auto' }}
-              >
+              <video ref={videoRef} controls autoPlay style={{ width: "100%", height: "auto" }}>
                 <source src="/demo.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
@@ -422,7 +406,7 @@ const LandingPage = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default LandingPage;
+export default LandingPage
