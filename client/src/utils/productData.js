@@ -1,5 +1,5 @@
 // Environment-based API URL configuration
-const DEPLOYED_API_URL = "https://server-azure-five-33.vercel.app/api"
+const DEPLOYED_API_URL = "https://stp-rust.vercel.app/api"
 const LOCAL_API_URL = "http://localhost:5000/api"
 
 // Auto-detect environment or allow manual override

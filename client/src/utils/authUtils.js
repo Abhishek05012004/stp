@@ -4,7 +4,7 @@
 export const getApiBaseUrl = () => {
   // Use deployed URL in production, local URL in development
   if (import.meta.env.VITE_NODE_ENV === 'production') {
-    return import.meta.env.VITE_DEPLOYED_API_URL || 'https://server-azure-five-33.vercel.app/api'
+    return import.meta.env.VITE_DEPLOYED_API_URL || 'https://stp-rust.vercel.app/api'
   } else {
     return import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
   }

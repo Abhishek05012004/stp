@@ -27,8 +27,7 @@ connectDB()
 
 // CORS Configuration
 const allowedOrigins = [
-  'https://client-ten-self-75.vercel.app',
-  'https://t2tap-pay-client.vercel.app',
+  'https://scan-tap-pay.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',
   undefined // Allow requests with no origin

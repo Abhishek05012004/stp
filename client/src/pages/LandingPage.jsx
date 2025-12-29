@@ -39,7 +39,7 @@ const LandingPage = () => {
   }, []);
 
   const handleStartShopping = () => {
-    window.location.href = "https://client-ten-self-75.vercel.app/scanner";
+    window.location.href = "https://scan-tap-pay/scanner";
   };
 
   const handlePlayVideo = () => {
