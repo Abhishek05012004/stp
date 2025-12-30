@@ -1,12 +1,12 @@
 // Page utility functions for better UX
 
 export const updatePageTitle = (title) => {
-  document.title = `${title} | Tip Tap Pay NFC`
+  document.title = `${title} | Scan Tap Pay NFC`
 }
 
 export const updatePageMeta = (title, description) => {
   // Update title
-  document.title = `${title} | Tip Tap Pay NFC`
+  document.title = `${title} | Scan Tap Pay NFC`
 
   // Update meta description
   let metaDescription = document.querySelector('meta[name="description"]')
@@ -24,7 +24,7 @@ export const updatePageMeta = (title, description) => {
     ogTitle.setAttribute("property", "og:title")
     document.head.appendChild(ogTitle)
   }
-  ogTitle.content = `${title} | Tip Tap Pay NFC`
+  ogTitle.content = `${title} | Scan Tap Pay NFC`
 
   // Update Open Graph description
   let ogDescription = document.querySelector('meta[property="og:description"]')

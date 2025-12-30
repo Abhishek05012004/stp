@@ -88,7 +88,7 @@ const Home = () => {
         transition={{ duration: 0.6 }}
       >
         <h1>
-          <FontAwesomeIcon icon={faRocket} /> Tip Tap Pay Scanner
+          <FontAwesomeIcon icon={faRocket} /> Scan Tap Pay Scanner
         </h1>
         <p>Scan QR codes & NFC tags to add products instantly</p>
       </motion.div>

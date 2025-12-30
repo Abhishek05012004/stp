@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useCart } from "../utils/CartContext.jsx"
 import { createOrderWithStockValidation, validateBulkStock } from "../utils/productData.js"
+import { getFullUrl } from "../utils/apiConfig.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
   faTriangleExclamation,
@@ -28,6 +29,7 @@ const Payment = () => {
   const [emailError, setEmailError] = useState("")
   const [showEmailSuccessModal, setShowEmailSuccessModal] = useState(false)
   const navigate = useNavigate()
+  const emailInputRef = useRef(null)
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -100,6 +102,8 @@ const Payment = () => {
   const validateEmailBeforePayment = () => {
     if (!customerEmail) {
       setEmailError("Email is required for invoice")
+      emailInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      emailInputRef.current?.focus()
       return false
     }
     if (!validateEmail(customerEmail)) {
@@ -190,7 +194,7 @@ const Payment = () => {
     setPaymentStatus(null)
 
     try {
-      const response = await fetch("https://stp-rust.vercel.app/api/payment/create-order", {
+      const response = await fetch(getFullUrl("/payment/create-order"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -209,7 +213,7 @@ const Payment = () => {
       }
 
       const options = {
-        key: "rzp_test_RH0I6LBnmc0Ziz",
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_test_RH0I6LBnmc0Ziz",
         amount: orderData.amount,
         currency: orderData.currency,
         name: "QR Scanner Store",
@@ -217,7 +221,7 @@ const Payment = () => {
         order_id: orderData.id,
         handler: async (response) => {
           try {
-            const verifyResponse = await fetch("https://stp-rust.vercel.app/api/payment/verify", {
+            const verifyResponse = await fetch(getFullUrl("/payment/verify"), {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -266,6 +270,13 @@ const Payment = () => {
   }
 
   const handlePaymentSuccess = async (orderId, transactionId) => {
+    if (!customerEmail || !customerEmail.includes("@")) {
+      alert("Please enter a valid email address to receive your invoice.")
+      emailInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      emailInputRef.current?.focus()
+      return
+    }
+
     try {
       setIsProcessing(true)
 
@@ -293,7 +304,7 @@ const Payment = () => {
       await createOrderWithStockValidation(orderData)
 
       try {
-        const emailResponse = await fetch("https://stp-rust.vercel.app/api/payment/send-invoice", {
+        const emailResponse = await fetch(getFullUrl("/payment/send-invoice"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -804,6 +815,7 @@ const Payment = () => {
                 boxSizing: "border-box",
               }}
               required
+              ref={emailInputRef}
             />
             {emailError && (
               <p

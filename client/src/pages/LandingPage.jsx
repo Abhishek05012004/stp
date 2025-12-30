@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { updatePageMeta, scrollToTop } from "../utils/pageUtils.js"
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 import "./LandingPage.css"
 
 // Import Font Awesome icons
@@ -34,7 +34,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     updatePageMeta(
-      "Tip Tap Pay - Instant QR & NFC Shopping Experience",
+      "Scan Tap Pay - Instant QR & NFC Shopping Experience",
       "Scan QR codes or tap NFC tags to instantly add products to cart and make secure payments. Experience seamless shopping!",
     )
     scrollToTop()
@@ -380,12 +380,12 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="footer">
         <div className="footer-content">
-          <h2 className="footer-title">Tip Tap Pay</h2>
+          <h2 className="footer-title">Scan Tap Pay</h2>
           <p className="footer-description">
             Experience the future of shopping with instant QR scanning and NFC tap technology. Making shopping faster,
             smarter, and more secure.
           </p>
-          <div className="footer-copyright">© {new Date().getFullYear()} Tip Tap Pay. All rights reserved.</div>
+          <div className="footer-copyright">© {new Date().getFullYear()} Scan Tap Pay. All rights reserved.</div>
         </div>
       </footer>
 

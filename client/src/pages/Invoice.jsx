@@ -20,7 +20,7 @@ const Invoice = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    document.title = "Invoice - Tip Tap Pay"
+    document.title = "Invoice - Scan Tap Pay"
   }, [])
 
   useEffect(() => {
@@ -184,7 +184,7 @@ const Invoice = () => {
                 flexWrap: "wrap",
               }}
             >
-              <div style={{ flex: "1", minWidth: "300px" }}>
+              <div className="company-info" style={{ flex: "1", minWidth: "300px" }}>
                 <div
                   style={{
                     display: "flex",
@@ -208,44 +208,23 @@ const Invoice = () => {
                     <FontAwesomeIcon icon={faCreditCard} />
                   </div>
                   <div>
-                    <h1
-                      style={{
-                        margin: "0",
-                        fontSize: "2.2rem",
-                        fontWeight: "bold",
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      TIP TAP PAY
-                    </h1>
-                    <p
-                      style={{
-                        margin: "5px 0 0 0",
-                        fontSize: "14px",
-                        opacity: "0.9",
-                        fontWeight: "500",
-                      }}
-                    >
-                      Smart Payment Solutions
-                    </p>
+                    <h2 style={{ fontSize: "2.5rem", fontWeight: "800", margin: "0", color: "white" }}>SCAN TAP PAY</h2>
+                    <p style={{ margin: "5px 0", fontSize: "1.1rem", opacity: "0.9" }}>Smart Payment Solutions</p>
+                    <div style={{ marginTop: "15px", fontSize: "0.95rem", opacity: "0.9" }}>
+                      <p style={{ margin: "2px 0" }}>📧 scantappay@gmail.com</p>
+                      <p style={{ margin: "2px 0" }}>📞 7575841397 / 8511231514</p>
+                      <p style={{ margin: "2px 0" }}>🏢 Office no. - 16, Digital Plaza, Mumbai - 400001</p>
+                      <p style={{ margin: "10px 0 0 0" }}>
+                        🌐 visit us:{" "}
+                        <a
+                          href="https://scan-tap-pay.vercel.app/"
+                          style={{ color: "white", textDecoration: "underline" }}
+                        >
+                          https://scan-tap-pay.vercel.app/
+                        </a>
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div
-                  style={{
-                    fontSize: "13px",
-                    opacity: "0.9",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  <p style={{ margin: "2px 0" }}>📧 scantappay@gmail.com</p>
-                  <p style={{ margin: "2px 0" }}>📞 7575841397 / 8511231514</p>
-                  <p style={{ margin: "2px 0" }}>🏢 Office no. - 16, Digital Plaza, Mumbai - 400001</p>
-                  <p style={{ margin: "2px 0" }}>
-                    🌐 visit us:{" "}
-                    <a href="https://scan-tap-pay.vercel.app/" style={{ color: "white", textDecoration: "underline" }}>
-                      https://scan-tap-pay.vercel.app/
-                    </a>
-                  </p>
                 </div>
               </div>
 
@@ -282,6 +261,7 @@ const Invoice = () => {
 
         <div style={{ padding: "30px", pageBreakInside: "avoid" }}>
           <div
+            className="details-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
@@ -290,6 +270,37 @@ const Invoice = () => {
               pageBreakInside: "avoid",
             }}
           >
+            <div
+              className="details-card"
+              style={{ background: "#f8fafc", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}
+            >
+              <h3
+                style={{ margin: "0 0 15px 0", display: "flex", alignItems: "center", gap: "10px", fontSize: "1.1rem" }}
+              >
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: "#0ea5e9",
+                    width: "30px",
+                    height: "30px",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  👤
+                </span>
+                Customer Details
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.95rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "#64748b" }}>Sent to Email:</span>
+                  <span style={{ fontWeight: "600", color: "#1e293b" }}>{orderData.customerEmail}</span>
+                </div>
+              </div>
+            </div>
+
             <div
               style={{
                 background: "#f8fafc",
@@ -710,7 +721,7 @@ const Invoice = () => {
                     lineHeight: "1.5",
                   }}
                 >
-                  Your order has been processed successfully. We appreciate your trust in Tip Tap Pay and look forward
+                  Your order has been processed successfully. We appreciate your trust in Scan Tap Pay and look forward
                   to serving you again!
                 </p>
               </div>
