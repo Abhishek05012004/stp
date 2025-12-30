@@ -25,19 +25,15 @@ const PORT = process.env.PORT || 5000
 // Connect to MongoDB
 connectDB()
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',') 
-  : [
-      'https://scan-tap-pay.vercel.app',
-      'http://localhost:3000',
-      'http://localhost:5173',
-    ];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : ["https://scan-tap-pay.vercel.app", "http://localhost:3000", "http://localhost:5173"]
 
 // Always allow requests with no origin (like Postman, mobile apps)
-allowedOrigins.push(undefined);
+allowedOrigins.push(undefined)
 
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps, curl, Postman)
     if (!origin) return callback(null, true)
 
@@ -71,7 +67,7 @@ app.use((req, res, next) => {
 // Root route - IMPORTANT for Vercel
 app.get("/", (req, res) => {
   res.json({
-    message: "🚀 Tip Tap Pay Backend API is running!",
+    message: "🚀 Scan Tap Pay Backend API is running!",
     status: "OK",
     endpoints: {
       health: "/api/health",
