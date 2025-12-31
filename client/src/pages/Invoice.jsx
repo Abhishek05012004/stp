@@ -12,6 +12,10 @@ import {
   faClipboardList,
   faCartShopping,
   faCircleCheck,
+  faEnvelope,
+  faGlobe,
+  faPhone,
+  faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons"
 
 const Invoice = () => {
@@ -28,7 +32,12 @@ const Invoice = () => {
     if (lastOrder) {
       try {
         const parsedOrder = JSON.parse(lastOrder)
-        setOrderData(parsedOrder)
+        // Ensure we have default values if needed
+        const enhancedOrder = {
+          ...parsedOrder,
+          customerEmail: parsedOrder.customerEmail || "scantappay@gmail.com",
+        }
+        setOrderData(enhancedOrder)
       } catch (error) {
         console.error("Error parsing order data:", error)
       }
@@ -48,15 +57,32 @@ const Invoice = () => {
 
   const handleDownloadPDF = () => {
     const element = document.getElementById("invoice-content")
+    const clonedElement = element.cloneNode(true)
+    
+    // Remove the Continue Shopping button from PDF
+    const continueShoppingBtn = clonedElement.querySelector(".continue-shopping-section")
+    if (continueShoppingBtn) {
+      continueShoppingBtn.remove()
+    }
+    
+    // Ensure all text is visible for PDF
+    const allElements = clonedElement.querySelectorAll('*')
+    allElements.forEach(el => {
+      el.style.boxShadow = 'none'
+      el.style.position = 'static'
+      el.style.transform = 'none'
+    })
+    
     const opt = {
-      margin: [1, 0.5, 1, 0.5],
+      margin: [0.5, 0.5, 0.5, 0.5],
       filename: `invoice-${orderData.id}.pdf`,
-      image: { type: "jpeg", quality: 0.95 },
+      image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
-        scale: 1.5,
+        scale: 2,
         useCORS: true,
-        allowTaint: true,
         backgroundColor: "#ffffff",
+        logging: false,
+        letterRendering: true,
       },
       jsPDF: {
         unit: "in",
@@ -64,9 +90,10 @@ const Invoice = () => {
         orientation: "portrait",
         compress: true,
       },
-      pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+      pagebreak: { mode: ["avoid-all", "css"] },
     }
-    html2pdf().set(opt).from(element).save()
+    
+    html2pdf().set(opt).from(clonedElement).save()
   }
 
   if (loading) {
@@ -153,458 +180,439 @@ const Invoice = () => {
         style={{
           background: "white",
           padding: "0",
-          borderRadius: "0",
-          boxShadow: "none",
+          borderRadius: "12px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
           marginBottom: "2rem",
-          maxWidth: "800px",
+          maxWidth: "1000px",
           margin: "0 auto 2rem auto",
-          fontFamily: "'Arial', 'Helvetica', sans-serif",
+          fontFamily: "'Segoe UI', 'Arial', sans-serif",
           border: "1px solid #e5e7eb",
           overflow: "hidden",
-          pageBreakInside: "avoid",
         }}
       >
+        {/* Invoice Header */}
         <div
           style={{
-            background: "#1e40af",
+            background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
             color: "white",
-            padding: "30px",
+            padding: "30px 30px 20px 30px",
             position: "relative",
             overflow: "hidden",
-            pageBreakInside: "avoid",
           }}
         >
-          <div style={{ position: "relative", zIndex: 2 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: "20px",
-                flexWrap: "wrap",
-              }}
-            >
-              <div className="company-info" style={{ flex: "1", minWidth: "300px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              gap: "20px",
+            }}
+          >
+            {/* Company Info */}
+            <div style={{ flex: "1", minWidth: "300px" }}>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
                 <div
                   style={{
+                    width: "50px",
+                    height: "50px",
+                    background: "rgba(255,255,255,0.15)",
+                    borderRadius: "10px",
                     display: "flex",
                     alignItems: "center",
-                    marginBottom: "15px",
+                    justifyContent: "center",
+                    marginRight: "15px",
+                    fontSize: "22px",
                   }}
                 >
-                  <div
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      background: "rgba(255,255,255,0.2)",
-                      borderRadius: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: "15px",
-                      fontSize: "24px",
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faCreditCard} />
-                  </div>
-                  <div>
-                    <h2 style={{ fontSize: "2.5rem", fontWeight: "800", margin: "0", color: "white" }}>SCAN TAP PAY</h2>
-                    <p style={{ margin: "5px 0", fontSize: "1.1rem", opacity: "0.9" }}>Smart Payment Solutions</p>
-                    <div style={{ marginTop: "15px", fontSize: "0.95rem", opacity: "0.9" }}>
-                      <p style={{ margin: "2px 0" }}>📧 scantappay@gmail.com</p>
-                      <p style={{ margin: "2px 0" }}>📞 7575841397 / 8511231514</p>
-                      <p style={{ margin: "2px 0" }}>🏢 Office no. - 16, Digital Plaza, Mumbai - 400001</p>
-                      <p style={{ margin: "10px 0 0 0" }}>
-                        🌐 visit us:{" "}
-                        <a
-                          href="https://scantappay.vercel.app/"
-                          style={{ color: "white", textDecoration: "underline" }}
-                        >
-                          https://scantappay.vercel.app/
-                        </a>
-                      </p>
-                    </div>
-                  </div>
+                  <FontAwesomeIcon icon={faCreditCard} />
+                </div>
+                <div>
+                  <h2 style={{ 
+                    fontSize: "1.8rem", 
+                    fontWeight: "800", 
+                    margin: "0 0 5px 0", 
+                    color: "white",
+                    letterSpacing: "0.5px"
+                  }}>
+                    SCAN TAP PAY
+                  </h2>
+                  <p style={{ margin: "0", fontSize: "0.95rem", opacity: "0.9" }}>
+                    Smart Payment Solutions
+                  </p>
                 </div>
               </div>
+              
+              {/* Company Contact Info */}
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
+                gap: "12px",
+                fontSize: "0.85rem",
+                opacity: "0.9"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FontAwesomeIcon icon={faEnvelope} style={{ width: "14px" }} />
+                  <span>scantappay@gmail.com</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FontAwesomeIcon icon={faPhone} style={{ width: "14px" }} />
+                  <span>7575841397 / 8511231514</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FontAwesomeIcon icon={faMapMarkerAlt} style={{ width: "14px" }} />
+                  <span>Office no. 16, Digital Plaza, Mumbai - 400001</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FontAwesomeIcon icon={faGlobe} style={{ width: "14px" }} />
+                  <span>
+                    <a 
+                      href="https://scantappay.vercel.app/" 
+                      style={{ color: "white", textDecoration: "none" }}
+                    >
+                      https://scantappay.vercel.app/
+                    </a>
+                  </span>
+                </div>
+              </div>
+            </div>
 
-              <div style={{ textAlign: "right", minWidth: "200px" }}>
-                <div
+            {/* Invoice Title and Sent To Email */}
+            <div style={{ 
+              textAlign: "right", 
+              minWidth: "250px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px"
+            }}>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "15px",
+                  borderRadius: "8px",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                <h2
                   style={{
-                    background: "rgba(255,255,255,0.15)",
-                    padding: "15px",
-                    borderRadius: "10px",
+                    margin: "0 0 10px 0",
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    letterSpacing: "1px",
                   }}
                 >
-                  <h2
-                    style={{
-                      margin: "0 0 8px 0",
-                      fontSize: "1.6rem",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    INVOICE
-                  </h2>
-                  <div style={{ fontSize: "13px", opacity: "0.9" }}>
-                    <p style={{ margin: "3px 0" }}>
-                      <strong>Invoice #:</strong> INV-{orderData.id}
-                    </p>
-                    <p style={{ margin: "3px 0" }}>
-                      <strong>Date:</strong> {formatDate(orderData.date)}
-                    </p>
-                  </div>
+                  INVOICE
+                </h2>
+                <div style={{ fontSize: "0.85rem", opacity: "0.95" }}>
+                  <p style={{ margin: "4px 0" }}>
+                    <strong>Invoice #:</strong> INV-{orderData.id}
+                  </p>
+                  <p style={{ margin: "4px 0" }}>
+                    <strong>Date:</strong> {formatDate(orderData.date)}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Sent To Email in Header */}
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "12px 15px",
+                  borderRadius: "8px",
+                  fontSize: "0.85rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "5px" }}>
+                  <FontAwesomeIcon icon={faEnvelope} style={{ width: "14px" }} />
+                  <strong>Sent to:</strong>
+                </div>
+                <div style={{ 
+                  wordBreak: "break-word",
+                  background: "rgba(255,255,255,0.05)",
+                  padding: "6px 10px",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,255,255,0.1)"
+                }}>
+                  {orderData.customerEmail}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div style={{ padding: "30px", pageBreakInside: "avoid" }}>
+        {/* Invoice Body */}
+        <div style={{ padding: "30px" }}>
+          {/* Details Grid */}
           <div
-            className="details-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
               gap: "20px",
               marginBottom: "30px",
-              pageBreakInside: "avoid",
             }}
           >
-            <div
-              className="details-card"
-              style={{ background: "#f8fafc", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}
-            >
-              <h3
-                style={{ margin: "0 0 15px 0", display: "flex", alignItems: "center", gap: "10px", fontSize: "1.1rem" }}
-              >
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: "#0ea5e9",
-                    width: "30px",
-                    height: "30px",
-                    borderRadius: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  👤
-                </span>
-                Customer Details
-              </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.95rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "#64748b" }}>Sent to Email:</span>
-                  <span style={{ fontWeight: "600", color: "#1e293b" }}>{orderData.customerEmail}</span>
-                </div>
-              </div>
-            </div>
-
+            {/* Invoice Details Card */}
             <div
               style={{
                 background: "#f8fafc",
                 padding: "20px",
                 borderRadius: "10px",
                 border: "1px solid #e2e8f0",
-                position: "relative",
               }}
             >
-              <div
-                style={{
-                  position: "absolute",
-                  top: "10px",
-                  right: "10px",
-                  width: "30px",
-                  height: "30px",
+              <div style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "10px", 
+                marginBottom: "15px" 
+              }}>
+                <div style={{
                   background: "#3b82f6",
-                  borderRadius: "6px",
+                  color: "white",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "8px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "14px",
-                  color: "white",
-                }}
-              >
-                <FontAwesomeIcon icon={faClipboardList} />
+                }}>
+                  <FontAwesomeIcon icon={faClipboardList} />
+                </div>
+                <h3 style={{ margin: "0", fontSize: "1.1rem", color: "#1e293b", fontWeight: "600" }}>
+                  Invoice Details
+                </h3>
               </div>
-              <h3
-                style={{
-                  color: "#1e293b",
-                  marginBottom: "15px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                }}
-              >
-                Invoice Details
-              </h3>
-              <div
-                style={{
-                  lineHeight: "1.8",
-                  color: "#475569",
-                  fontSize: "14px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "6px",
-                  }}
-                >
-                  <span style={{ fontWeight: "600" }}>Invoice #:</span>
-                  <span
-                    style={{
-                      fontFamily: "monospace",
-                      background: "#e2e8f0",
-                      padding: "2px 6px",
-                      borderRadius: "3px",
-                    }}
-                  >
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "#64748b", fontSize: "0.9rem" }}>Invoice #:</span>
+                  <span style={{ 
+                    fontFamily: "monospace", 
+                    background: "#e2e8f0", 
+                    padding: "4px 10px", 
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                    fontWeight: "600"
+                  }}>
                     INV-{orderData.id}
                   </span>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "6px",
-                  }}
-                >
-                  <span style={{ fontWeight: "600" }}>Order ID:</span>
-                  <span
-                    style={{
-                      fontFamily: "monospace",
-                      background: "#e2e8f0",
-                      padding: "2px 6px",
-                      borderRadius: "3px",
-                    }}
-                  >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "#64748b", fontSize: "0.9rem" }}>Order ID:</span>
+                  <span style={{ 
+                    fontFamily: "monospace", 
+                    background: "#e2e8f0", 
+                    padding: "4px 10px", 
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                    fontWeight: "600"
+                  }}>
                     {orderData.id}
                   </span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontWeight: "600" }}>Date:</span>
-                  <span>{formatDate(orderData.date)}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "#64748b", fontSize: "0.9rem" }}>Date & Time:</span>
+                  <span style={{ fontSize: "0.9rem", fontWeight: "500" }}>
+                    {formatDate(orderData.date)}
+                  </span>
                 </div>
               </div>
             </div>
 
+            {/* Payment Details Card */}
             <div
               style={{
                 background: "#ecfdf5",
                 padding: "20px",
                 borderRadius: "10px",
                 border: "1px solid #a7f3d0",
-                position: "relative",
               }}
             >
-              <div
-                style={{
-                  position: "absolute",
-                  top: "10px",
-                  right: "10px",
-                  width: "30px",
-                  height: "30px",
+              <div style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "10px", 
+                marginBottom: "15px" 
+              }}>
+                <div style={{
                   background: "#10b981",
-                  borderRadius: "6px",
+                  color: "white",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "8px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "14px",
-                  color: "white",
-                }}
-              >
-                <FontAwesomeIcon icon={faCreditCard} />
-              </div>
-              <h3
-                style={{
-                  color: "#1e293b",
-                  marginBottom: "15px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                }}
-              >
-                Payment Details
-              </h3>
-              <div
-                style={{
-                  lineHeight: "1.8",
-                  color: "#475569",
-                  fontSize: "14px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "6px",
-                  }}
-                >
-                  <span style={{ fontWeight: "600" }}>Method:</span>
-                  <span>{orderData.paymentMethod}</span>
+                }}>
+                  <FontAwesomeIcon icon={faCreditCard} />
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "6px",
-                  }}
-                >
-                  <span style={{ fontWeight: "600" }}>Transaction:</span>
-                  <span
-                    style={{
-                      fontFamily: "monospace",
-                      background: "#d1fae5",
-                      padding: "2px 6px",
-                      borderRadius: "3px",
-                    }}
-                  >
+                <h3 style={{ margin: "0", fontSize: "1.1rem", color: "#1e293b", fontWeight: "600" }}>
+                  Payment Details
+                </h3>
+              </div>
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "#64748b", fontSize: "0.9rem" }}>Method:</span>
+                  <span style={{ fontSize: "0.9rem", fontWeight: "500" }}>
+                    {orderData.paymentMethod}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "#64748b", fontSize: "0.9rem" }}>Transaction:</span>
+                  <span style={{ 
+                    fontFamily: "monospace", 
+                    background: "#d1fae5", 
+                    padding: "4px 10px", 
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                    fontWeight: "600"
+                  }}>
                     {orderData.transactionId}
                   </span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontWeight: "600" }}>Status:</span>
-                  <span
-                    style={{
-                      color: "#059669",
-                      fontWeight: "bold",
-                      background: "#d1fae5",
-                      padding: "3px 8px",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faCircleCheck} /> {orderData.status.toUpperCase()}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "#64748b", fontSize: "0.9rem" }}>Status:</span>
+                  <span style={{ 
+                    color: "#059669", 
+                    fontWeight: "600", 
+                    background: "#d1fae5", 
+                    padding: "4px 12px", 
+                    borderRadius: "20px",
+                    fontSize: "0.8rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px"
+                  }}>
+                    <FontAwesomeIcon icon={faCircleCheck} /> 
+                    {orderData.status.toUpperCase()}
                   </span>
                 </div>
               </div>
             </div>
           </div>
-          <div style={{ marginBottom: "30px", pageBreakInside: "avoid" }}>
-            <h3
-              style={{
-                color: "#1e293b",
-                marginBottom: "20px",
-                fontSize: "20px",
-                fontWeight: "bold",
+
+          {/* Order Items Table */}
+          <div style={{ marginBottom: "30px" }}>
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "10px", 
+              marginBottom: "20px" 
+            }}>
+              <div style={{
+                background: "#3b82f6",
+                color: "white",
+                width: "40px",
+                height: "40px",
+                borderRadius: "10px",
                 display: "flex",
                 alignItems: "center",
-              }}
-            >
-              <span style={{ marginRight: "8px", fontSize: "20px" }}>
+                justifyContent: "center",
+              }}>
                 <FontAwesomeIcon icon={faCartShopping} />
-              </span>
-              Order Items
-            </h3>
-            <div
-              style={{
-                borderRadius: "10px",
-                overflow: "hidden",
-                border: "1px solid #e2e8f0",
-                pageBreakInside: "avoid",
-              }}
-            >
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              </div>
+              <h3 style={{ margin: "0", fontSize: "1.2rem", color: "#1e293b", fontWeight: "600" }}>
+                Order Items
+              </h3>
+            </div>
+            
+            <div style={{ 
+              borderRadius: "10px", 
+              overflow: "hidden", 
+              border: "1px solid #e2e8f0",
+              overflowX: "auto"
+            }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "600px" }}>
                 <thead>
-                  <tr style={{ background: "#1e293b", color: "white" }}>
-                    <th
-                      style={{
-                        padding: "15px",
-                        textAlign: "left",
-                        fontWeight: "bold",
-                        fontSize: "14px",
-                      }}
-                    >
+                  <tr style={{ background: "#f1f5f9" }}>
+                    <th style={{ 
+                      padding: "15px", 
+                      textAlign: "left", 
+                      fontWeight: "600",
+                      fontSize: "0.9rem",
+                      color: "#334155",
+                      borderBottom: "1px solid #e2e8f0"
+                    }}>
                       Product Name
                     </th>
-                    <th
-                      style={{
-                        padding: "15px",
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        fontSize: "14px",
-                      }}
-                    >
+                    <th style={{ 
+                      padding: "15px", 
+                      textAlign: "center", 
+                      fontWeight: "600",
+                      fontSize: "0.9rem",
+                      color: "#334155",
+                      borderBottom: "1px solid #e2e8f0"
+                    }}>
                       Qty
                     </th>
-                    <th
-                      style={{
-                        padding: "15px",
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        fontSize: "14px",
-                      }}
-                    >
+                    <th style={{ 
+                      padding: "15px", 
+                      textAlign: "center", 
+                      fontWeight: "600",
+                      fontSize: "0.9rem",
+                      color: "#334155",
+                      borderBottom: "1px solid #e2e8f0"
+                    }}>
                       Unit Price
                     </th>
-                    <th
-                      style={{
-                        padding: "15px",
-                        textAlign: "right",
-                        fontWeight: "bold",
-                        fontSize: "14px",
-                      }}
-                    >
+                    <th style={{ 
+                      padding: "15px", 
+                      textAlign: "right", 
+                      fontWeight: "600",
+                      fontSize: "0.9rem",
+                      color: "#334155",
+                      borderBottom: "1px solid #e2e8f0"
+                    }}>
                       Total
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {orderData.items.map((item, index) => (
-                    <tr
-                      key={index}
-                      style={{
-                        background: index % 2 === 0 ? "#f8fafc" : "white",
-                        borderBottom: "1px solid #e2e8f0",
-                      }}
-                    >
-                      <td
-                        style={{
-                          padding: "12px",
-                          fontWeight: "600",
-                          fontSize: "14px",
-                        }}
-                      >
+                    <tr key={index} style={{ 
+                      background: index % 2 === 0 ? "#f8fafc" : "white",
+                      borderBottom: index !== orderData.items.length - 1 ? "1px solid #f1f5f9" : "none"
+                    }}>
+                      <td style={{ 
+                        padding: "15px", 
+                        fontWeight: "500", 
+                        fontSize: "0.95rem",
+                        color: "#1e293b"
+                      }}>
                         {item.name}
                       </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          textAlign: "center",
-                          fontSize: "14px",
-                        }}
-                      >
-                        <span
-                          style={{
-                            background: "#e2e8f0",
-                            padding: "3px 8px",
-                            borderRadius: "12px",
-                            fontWeight: "600",
-                          }}
-                        >
+                      <td style={{ 
+                        padding: "15px", 
+                        textAlign: "center" 
+                      }}>
+                        <span style={{
+                          background: "#e2e8f0",
+                          padding: "5px 12px",
+                          borderRadius: "20px",
+                          fontWeight: "600",
+                          fontSize: "0.9rem",
+                          minWidth: "40px",
+                          display: "inline-block"
+                        }}>
                           {item.quantity}
                         </span>
                       </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          textAlign: "center",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                        }}
-                      >
+                      <td style={{ 
+                        padding: "15px", 
+                        textAlign: "center", 
+                        fontWeight: "500",
+                        fontSize: "0.95rem"
+                      }}>
                         ₹{item.price.toFixed(2)}
                       </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          textAlign: "right",
-                          fontWeight: "bold",
-                          fontSize: "14px",
-                          color: "#1e293b",
-                        }}
-                      >
+                      <td style={{ 
+                        padding: "15px", 
+                        textAlign: "right", 
+                        fontWeight: "600",
+                        fontSize: "0.95rem",
+                        color: "#1e293b"
+                      }}>
                         ₹{(item.price * item.quantity).toFixed(2)}
                       </td>
                     </tr>
@@ -613,67 +621,52 @@ const Invoice = () => {
               </table>
             </div>
           </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginBottom: "30px",
-              pageBreakInside: "avoid",
-            }}
-          >
-            <div style={{ minWidth: "350px" }}>
-              <div
-                style={{
-                  background: "#f8fafc",
-                  padding: "25px",
-                  borderRadius: "15px",
-                  border: "2px solid #e2e8f0",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "12px",
-                    fontSize: "15px",
-                    color: "#475569",
-                  }}
-                >
-                  <span style={{ fontWeight: "600" }}>Subtotal:</span>
+
+          {/* Total Amount */}
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "flex-end", 
+            marginBottom: "30px" 
+          }}>
+            <div style={{ width: "100%", maxWidth: "350px" }}>
+              <div style={{ 
+                background: "#f8fafc", 
+                padding: "25px", 
+                borderRadius: "10px",
+                border: "1px solid #e2e8f0"
+              }}>
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  marginBottom: "12px",
+                  fontSize: "0.95rem",
+                  color: "#475569"
+                }}>
+                  <span style={{ fontWeight: "500" }}>Subtotal:</span>
                   <span style={{ fontWeight: "600" }}>₹{orderData.total.toFixed(2)}</span>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "15px",
-                    fontSize: "15px",
-                    color: "#475569",
-                  }}
-                >
-                  <span style={{ fontWeight: "600" }}>Shipping:</span>
-                  <span style={{ color: "#059669", fontWeight: "bold" }}>Free</span>
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  marginBottom: "20px",
+                  fontSize: "0.95rem",
+                  color: "#475569"
+                }}>
+                  <span style={{ fontWeight: "500" }}>Shipping:</span>
+                  <span style={{ color: "#059669", fontWeight: "600" }}>FREE</span>
                 </div>
-                <div
-                  style={{
-                    borderTop: "2px solid #3b82f6",
-                    paddingTop: "15px",
-                    marginTop: "15px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "20px",
-                      fontWeight: "bold",
-                      color: "#1e293b",
-                      background: "white",
-                      padding: "15px",
-                      borderRadius: "10px",
-                      border: "2px solid #3b82f6",
-                    }}
-                  >
+                <div style={{ 
+                  borderTop: "2px solid #3b82f6", 
+                  paddingTop: "15px",
+                  marginTop: "15px"
+                }}>
+                  <div style={{ 
+                    display: "flex", 
+                    justifyContent: "space-between",
+                    fontSize: "1.2rem",
+                    fontWeight: "bold",
+                    color: "#1e293b"
+                  }}>
                     <span>Total Amount:</span>
                     <span style={{ color: "#3b82f6" }}>₹{orderData.total.toFixed(2)}</span>
                   </div>
@@ -681,129 +674,201 @@ const Invoice = () => {
               </div>
             </div>
           </div>
-          <div
-            style={{
-              textAlign: "center",
-              paddingTop: "30px",
-              borderTop: "2px solid #e2e8f0",
-              pageBreakInside: "avoid",
-            }}
-          >
-            <div
-              style={{
-                background: "#fef3c7",
-                padding: "25px",
-                borderRadius: "15px",
-                marginBottom: "25px",
-                border: "2px solid #f59e0b",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <div style={{ position: "relative", zIndex: 2 }}>
-                <div style={{ fontSize: "36px", marginBottom: "12px" }}>🎉</div>
-                <h3
-                  style={{
-                    margin: "0 0 12px 0",
-                    fontSize: "20px",
-                    fontWeight: "bold",
-                    color: "#92400e",
-                  }}
-                >
-                  Thank You for Your Business!
-                </h3>
-                <p
-                  style={{
-                    margin: "0",
-                    fontSize: "14px",
-                    color: "#a16207",
-                    fontWeight: "500",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  Your order has been processed successfully. We appreciate your trust in Scan Tap Pay and look forward
-                  to serving you again!
-                </p>
-              </div>
+
+          {/* Thank You Message */}
+          <div style={{ 
+            textAlign: "center", 
+            paddingTop: "30px", 
+            borderTop: "2px solid #e2e8f0",
+            marginBottom: "30px"
+          }}>
+            <div style={{ 
+              background: "#fef3c7", 
+              padding: "25px", 
+              borderRadius: "10px",
+              border: "1px solid #f59e0b",
+              marginBottom: "25px"
+            }}>
+              <div style={{ fontSize: "2.5rem", marginBottom: "15px" }}>🎉</div>
+              <h3 style={{ 
+                margin: "0 0 10px 0", 
+                fontSize: "1.2rem", 
+                fontWeight: "bold",
+                color: "#92400e"
+              }}>
+                Thank You for Your Business!
+              </h3>
+              <p style={{ 
+                margin: "0", 
+                fontSize: "0.95rem", 
+                color: "#a16207",
+                lineHeight: "1.6"
+              }}>
+                Your order has been processed successfully. We appreciate your trust in 
+                Scan Tap Pay and look forward to serving you again!
+              </p>
             </div>
 
-            <div
-              style={{
-                background: "#f8fafc",
-                padding: "20px",
-                borderRadius: "10px",
-                border: "1px solid #e2e8f0",
-                pageBreakInside: "avoid",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "13px",
-                  color: "#64748b",
-                  lineHeight: "1.6",
-                }}
-              >
-                <p style={{ margin: "6px 0", fontWeight: "600" }}>
-                  📧 For support: support@tiptappay.com | 📞 +91-9876-543-210
-                </p>
-                <p style={{ margin: "6px 0" }}>🌐 Visit us: www.tiptappay.com | Follow us on social media</p>
-                <div
-                  style={{
-                    marginTop: "12px",
-                    paddingTop: "12px",
-                    borderTop: "1px solid #e2e8f0",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "4px 0",
-                      fontSize: "11px",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    This is a computer-generated invoice. No signature required.
+            {/* Footer Info */}
+            <div style={{ 
+              background: "#f8fafc", 
+              padding: "20px", 
+              borderRadius: "10px",
+              border: "1px solid #e2e8f0",
+              fontSize: "0.85rem",
+              color: "#64748b"
+            }}>
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", 
+                gap: "15px",
+                marginBottom: "15px"
+              }}>
+                <div>
+                  <p style={{ margin: "0 0 5px 0", fontWeight: "600" }}>
+                    <FontAwesomeIcon icon={faEnvelope} /> For support:
                   </p>
-                  <p
-                    style={{
-                      margin: "4px 0",
-                      fontSize: "11px",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    Generated on {new Date().toLocaleString()} | Invoice ID: INV-{orderData.id}
+                  <p style={{ margin: "0" }}>scantappay@gmail.com</p>
+                </div>
+                <div>
+                  <p style={{ margin: "0 0 5px 0", fontWeight: "600" }}>
+                    <FontAwesomeIcon icon={faPhone} /> Contact:
+                  </p>
+                  <p style={{ margin: "0" }}>7575841397 / 8511231514</p>
+                </div>
+                <div>
+                  <p style={{ margin: "0 0 5px 0", fontWeight: "600" }}>
+                    <FontAwesomeIcon icon={faGlobe} /> Website:
+                  </p>
+                  <p style={{ margin: "0" }}>
+                    <a 
+                      href="https://scantappay.vercel.app/" 
+                      style={{ color: "#64748b", textDecoration: "none" }}
+                    >
+                      https://scantappay.vercel.app/
+                    </a>
                   </p>
                 </div>
+              </div>
+              
+              <div style={{ 
+                paddingTop: "15px", 
+                borderTop: "1px solid #e2e8f0",
+                fontSize: "0.75rem",
+                color: "#94a3b8"
+              }}>
+                <p style={{ margin: "5px 0" }}>
+                  This is a computer-generated invoice. No signature required.
+                </p>
+                <p style={{ margin: "5px 0" }}>
+                  Generated on {new Date().toLocaleString()} | Invoice ID: INV-{orderData.id}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            marginBottom: "2rem",
-          }}
-        >
+        {/* Continue Shopping Section (Will be removed from PDF) */}
+        <div className="continue-shopping-section" style={{
+          padding: "25px 30px",
+          background: "#f8fafc",
+          borderTop: "1px solid #e2e8f0",
+          textAlign: "center"
+        }}>
           <Link
             to="/scanner"
             style={{
-              padding: "1rem 2rem",
-              background: "#007bff",
+              padding: "12px 30px",
+              background: "#3b82f6",
               color: "white",
               textDecoration: "none",
               borderRadius: "8px",
-              fontSize: "16px",
+              fontSize: "1rem",
               fontWeight: "600",
-              display: "inline-block",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              transition: "all 0.3s ease"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "#2563eb";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "#3b82f6";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "none";
             }}
           >
-            🛒 Continue Shopping
+            <FontAwesomeIcon icon={faCartShopping} />
+            Continue Shopping
           </Link>
         </div>
       </div>
+      
+      {/* Responsive CSS */}
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .nav-buttons {
+            flex-direction: column;
+            gap: 10px;
+          }
+          
+          .nav-btn {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+          }
+          
+          #invoice-content {
+            margin: 0 -15px;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+          }
+          
+          .continue-shopping-section {
+            padding: 20px 15px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .header h1 {
+            font-size: 1.5rem;
+          }
+          
+          #invoice-content > div:first-child {
+            padding: 20px 15px;
+          }
+          
+          #invoice-content > div:last-child {
+            padding: 20px 15px;
+          }
+          
+          table {
+            font-size: 0.85rem;
+          }
+          
+          th, td {
+            padding: 10px !important;
+          }
+        }
+        
+        @media print {
+          .nav-buttons,
+          .continue-shopping-section {
+            display: none !important;
+          }
+          
+          #invoice-content {
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
