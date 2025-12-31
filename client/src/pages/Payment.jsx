@@ -17,6 +17,9 @@ import {
   faFileInvoice,
 } from "@fortawesome/free-solid-svg-icons"
 
+// Import the invoice generation function
+import { generateInvoiceHTML } from "./Invoice.jsx"
+
 const Payment = () => {
   const { items, getTotal, clearCart } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
@@ -298,12 +301,16 @@ const Payment = () => {
         currency: "INR",
         transactionId: transactionId || "TXN" + Date.now(),
         paymentTime: new Date().toISOString(),
+        date: new Date().toISOString(), // Add date for invoice
       }
 
       console.log("💳 Processing payment with inventory management...")
       await createOrderWithStockValidation(orderData)
 
       try {
+        // Generate invoice HTML using the unified function
+        const invoiceHTML = generateInvoiceHTML(orderData)
+        
         const emailResponse = await fetch(getFullUrl("/payment/send-invoice"), {
           method: "POST",
           headers: {
@@ -312,6 +319,7 @@ const Payment = () => {
           body: JSON.stringify({
             email: customerEmail,
             orderData: orderData,
+            invoiceHTML: invoiceHTML, // Send the generated HTML
           }),
         })
 

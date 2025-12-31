@@ -18,6 +18,538 @@ import {
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons"
 
+// Export function to generate invoice HTML for email
+export const generateInvoiceHTML = (orderData) => {
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Invoice - ${orderData.id}</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          font-family: 'Segoe UI', 'Arial', sans-serif;
+          margin: 0;
+          padding: 20px;
+          background-color: #f3f4f6;
+          color: #1f2937;
+          line-height: 1.6;
+        }
+        .invoice-container {
+          max-width: 1000px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          border: 1px solid #e5e7eb;
+        }
+        .invoice-header {
+          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+          color: white;
+          padding: 30px 30px 20px 30px;
+          position: relative;
+          overflow: hidden;
+        }
+        .company-info {
+          display: flex;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+        .company-logo {
+          width: 50px;
+          height: 50px;
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 15px;
+          font-size: 22px;
+        }
+        .company-name {
+          font-size: 1.8rem;
+          font-weight: 800;
+          margin: 0 0 5px 0;
+          color: white;
+          letter-spacing: 0.5px;
+        }
+        .company-desc {
+          margin: 0;
+          font-size: 0.95rem;
+          opacity: 0.9;
+        }
+        .contact-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+          font-size: 0.85rem;
+          opacity: 0.9;
+          margin-top: 20px;
+        }
+        .contact-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .invoice-title-section {
+          text-align: right;
+          min-width: 250px;
+        }
+        .invoice-badge {
+          background: rgba(255, 255, 255, 0.1);
+          padding: 15px;
+          border-radius: 8px;
+          backdrop-filter: blur(10px);
+          margin-bottom: 15px;
+        }
+        .invoice-title {
+          margin: 0 0 10px 0;
+          font-size: 1.5rem;
+          font-weight: bold;
+          letter-spacing: 1px;
+        }
+        .invoice-details {
+          font-size: 0.85rem;
+          opacity: 0.95;
+        }
+        .invoice-body {
+          padding: 30px;
+        }
+        .details-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+        .details-card {
+          background: #f8fafc;
+          padding: 20px;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
+        }
+        .payment-card {
+          background: #ecfdf5;
+          padding: 20px;
+          border-radius: 10px;
+          border: 1px solid #a7f3d0;
+        }
+        .card-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 15px;
+        }
+        .card-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+        }
+        .card-title {
+          margin: 0;
+          font-size: 1.1rem;
+          color: #1e293b;
+          font-weight: 600;
+        }
+        .card-content {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .card-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .card-label {
+          color: #64748b;
+          font-size: 0.9rem;
+        }
+        .card-value {
+          font-size: 0.9rem;
+          font-weight: 500;
+        }
+        .value-tag {
+          font-family: monospace;
+          background: #e2e8f0;
+          padding: 4px 10px;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+        .status-badge {
+          color: #059669;
+          font-weight: 600;
+          background: #d1fae5;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .items-section {
+          margin-bottom: 30px;
+        }
+        .items-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+        .items-icon {
+          background: #3b82f6;
+          color: white;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .items-title {
+          margin: 0;
+          font-size: 1.2rem;
+          color: #1e293b;
+          font-weight: 600;
+        }
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
+        }
+        .items-table th {
+          background: #f1f5f9;
+          padding: 15px;
+          text-align: left;
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: #334155;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .items-table td {
+          padding: 15px;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .quantity-badge {
+          background: #e2e8f0;
+          padding: 5px 12px;
+          border-radius: 20px;
+          font-weight: 600;
+          font-size: 0.9rem;
+          min-width: 40px;
+          display: inline-block;
+          text-align: center;
+        }
+        .total-section {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 30px;
+        }
+        .total-container {
+          width: 100%;
+          max-width: 350px;
+        }
+        .total-box {
+          background: #f8fafc;
+          padding: 25px;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
+        }
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 12px;
+          font-size: 0.95rem;
+          color: #475569;
+        }
+        .total-label {
+          font-weight: 500;
+        }
+        .total-value {
+          font-weight: 600;
+        }
+        .grand-total {
+          border-top: 2px solid #3b82f6;
+          padding-top: 15px;
+          margin-top: 15px;
+          display: flex;
+          justify-content: space-between;
+          font-size: 1.2rem;
+          font-weight: bold;
+          color: #1e293b;
+        }
+        .grand-total-value {
+          color: #3b82f6;
+        }
+        .thank-you-section {
+          text-align: center;
+          padding-top: 30px;
+          border-top: 2px solid #e2e8f0;
+          margin-bottom: 30px;
+        }
+        .thank-you-box {
+          background: #fef3c7;
+          padding: 25px;
+          border-radius: 10px;
+          border: 1px solid #f59e0b;
+          margin-bottom: 25px;
+        }
+        .footer-info {
+          background: #f8fafc;
+          padding: 20px;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
+          font-size: 0.85rem;
+          color: #64748b;
+        }
+        .footer-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 15px;
+          margin-bottom: 15px;
+        }
+        .footer-note {
+          padding-top: 15px;
+          border-top: 1px solid #e2e8f0;
+          font-size: 0.75rem;
+          color: #94a3b8;
+        }
+        @media (max-width: 768px) {
+          .invoice-header {
+            padding: 20px 15px;
+          }
+          .invoice-body {
+            padding: 20px 15px;
+          }
+          .contact-grid {
+            grid-template-columns: 1fr;
+          }
+          .items-table {
+            font-size: 0.85rem;
+          }
+          th, td {
+            padding: 10px !important;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="invoice-container">
+        <div class="invoice-header">
+          <div class="company-info">
+            <div class="company-logo">💳</div>
+            <div>
+              <h2 class="company-name">SCAN TAP PAY</h2>
+              <p class="company-desc">Smart Payment Solutions</p>
+            </div>
+          </div>
+          
+          <div class="contact-grid">
+            <div class="contact-item">
+              📧 scantappay@gmail.com
+            </div>
+            <div class="contact-item">
+              📞 7575841397 / 8511231514
+            </div>
+            <div class="contact-item">
+              📍 Office no. 16, Digital Plaza, Mumbai - 400001
+            </div>
+            <div class="contact-item">
+              🌐 https://scantappay.vercel.app/
+            </div>
+          </div>
+          
+          <div style="text-align: right; margin-top: 20px;">
+            <div class="invoice-badge">
+              <h2 class="invoice-title">INVOICE</h2>
+              <div class="invoice-details">
+                <p style="margin: 4px 0;"><strong>Invoice #:</strong> INV-${orderData.id}</p>
+                <p style="margin: 4px 0;"><strong>Date:</strong> ${formatDate(orderData.date)}</p>
+              </div>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 8px; font-size: 0.85rem;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <strong>Sent to:</strong>
+              </div>
+              <div style="word-break: break-word; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 4px;">
+                ${orderData.customerEmail}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="invoice-body">
+          <div class="details-grid">
+            <div class="details-card">
+              <div class="card-header">
+                <div class="card-icon" style="background: #3b82f6;">📋</div>
+                <h3 class="card-title">Invoice Details</h3>
+              </div>
+              <div class="card-content">
+                <div class="card-row">
+                  <span class="card-label">Invoice #:</span>
+                  <span class="card-value">
+                    <span class="value-tag">INV-${orderData.id}</span>
+                  </span>
+                </div>
+                <div class="card-row">
+                  <span class="card-label">Order ID:</span>
+                  <span class="card-value">
+                    <span class="value-tag">${orderData.id}</span>
+                  </span>
+                </div>
+                <div class="card-row">
+                  <span class="card-label">Date & Time:</span>
+                  <span class="card-value">${formatDate(orderData.date)}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="payment-card">
+              <div class="card-header">
+                <div class="card-icon" style="background: #10b981;">💳</div>
+                <h3 class="card-title">Payment Details</h3>
+              </div>
+              <div class="card-content">
+                <div class="card-row">
+                  <span class="card-label">Method:</span>
+                  <span class="card-value">${orderData.paymentMethod}</span>
+                </div>
+                <div class="card-row">
+                  <span class="card-label">Transaction:</span>
+                  <span class="card-value">
+                    <span class="value-tag" style="background: #d1fae5;">${orderData.transactionId}</span>
+                  </span>
+                </div>
+                <div class="card-row">
+                  <span class="card-label">Status:</span>
+                  <span class="card-value">
+                    <span class="status-badge">✓ ${orderData.status.toUpperCase()}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="items-section">
+            <div class="items-header">
+              <div class="items-icon">🛒</div>
+              <h3 class="items-title">Order Items</h3>
+            </div>
+            
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Product Name</th>
+                  <th style="text-align: center;">Qty</th>
+                  <th style="text-align: center;">Unit Price</th>
+                  <th style="text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orderData.items.map((item, index) => `
+                  <tr style="background: ${index % 2 === 0 ? '#f8fafc' : 'white'};">
+                    <td style="font-weight: 500; font-size: 0.95rem; color: #1e293b;">
+                      ${item.name}
+                    </td>
+                    <td style="text-align: center;">
+                      <span class="quantity-badge">${item.quantity}</span>
+                    </td>
+                    <td style="text-align: center; font-weight: 500; font-size: 0.95rem;">
+                      ₹${item.price.toFixed(2)}
+                    </td>
+                    <td style="text-align: right; font-weight: 600; font-size: 0.95rem; color: #1e293b;">
+                      ₹${(item.price * item.quantity).toFixed(2)}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="total-section">
+            <div class="total-container">
+              <div class="total-box">
+                <div class="total-row">
+                  <span class="total-label">Subtotal:</span>
+                  <span class="total-value">₹${orderData.total.toFixed(2)}</span>
+                </div>
+                <div class="total-row">
+                  <span class="total-label">Shipping:</span>
+                  <span class="total-value" style="color: #059669;">FREE</span>
+                </div>
+                <div class="grand-total">
+                  <span>Total Amount:</span>
+                  <span class="grand-total-value">₹${orderData.total.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="thank-you-section">
+            <div class="thank-you-box">
+              <div style="font-size: 2.5rem; margin-bottom: 15px;">🎉</div>
+              <h3 style="margin: 0 0 10px 0; font-size: 1.2rem; font-weight: bold; color: #92400e;">
+                Thank You for Your Business!
+              </h3>
+              <p style="margin: 0; font-size: 0.95rem; color: #a16207; line-height: 1.6;">
+                Your order has been processed successfully. We appreciate your trust in 
+                Scan Tap Pay and look forward to serving you again!
+              </p>
+            </div>
+            
+            <div class="footer-info">
+              <div class="footer-grid">
+                <div>
+                  <p style="margin: 0 0 5px 0; font-weight: 600;">📧 For support:</p>
+                  <p style="margin: 0;">scantappay@gmail.com</p>
+                </div>
+                <div>
+                  <p style="margin: 0 0 5px 0; font-weight: 600;">📞 Contact:</p>
+                  <p style="margin: 0;">7575841397 / 8511231514</p>
+                </div>
+                <div>
+                  <p style="margin: 0 0 5px 0; font-weight: 600;">🌐 Website:</p>
+                  <p style="margin: 0;">https://scantappay.vercel.app/</p>
+                </div>
+              </div>
+              
+              <div class="footer-note">
+                <p style="margin: 5px 0;">This is a computer-generated invoice. No signature required.</p>
+                <p style="margin: 5px 0;">Generated on ${new Date().toLocaleString()} | Invoice ID: INV-${orderData.id}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+}
+
 const Invoice = () => {
   const [orderData, setOrderData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -32,7 +564,6 @@ const Invoice = () => {
     if (lastOrder) {
       try {
         const parsedOrder = JSON.parse(lastOrder)
-        // Ensure we have default values if needed
         const enhancedOrder = {
           ...parsedOrder,
           customerEmail: parsedOrder.customerEmail || "scantappay@gmail.com",
@@ -175,6 +706,7 @@ const Invoice = () => {
         </button>
       </div>
 
+      {/* Invoice Content - Same as email template */}
       <div
         id="invoice-content"
         style={{
@@ -806,69 +1338,6 @@ const Invoice = () => {
           </Link>
         </div>
       </div>
-      
-      {/* Responsive CSS */}
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .nav-buttons {
-            flex-direction: column;
-            gap: 10px;
-          }
-          
-          .nav-btn {
-            width: 100%;
-            text-align: center;
-            justify-content: center;
-          }
-          
-          #invoice-content {
-            margin: 0 -15px;
-            border-radius: 0;
-            border-left: none;
-            border-right: none;
-          }
-          
-          .continue-shopping-section {
-            padding: 20px 15px;
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .header h1 {
-            font-size: 1.5rem;
-          }
-          
-          #invoice-content > div:first-child {
-            padding: 20px 15px;
-          }
-          
-          #invoice-content > div:last-child {
-            padding: 20px 15px;
-          }
-          
-          table {
-            font-size: 0.85rem;
-          }
-          
-          th, td {
-            padding: 10px !important;
-          }
-        }
-        
-        @media print {
-          .nav-buttons,
-          .continue-shopping-section {
-            display: none !important;
-          }
-          
-          #invoice-content {
-            box-shadow: none !important;
-            border: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }
