@@ -6,7 +6,7 @@ import { useCart } from "../utils/CartContext.jsx"
 import { getProductById } from "../utils/productData.js"
 import { playBeepSound, playSuccessSound, preloadAudio } from "../utils/soundUtils.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faMobileAlt, faRss, faCheckCircle, faTimesCircle } from "@fortawesome/free-solid-svg-icons"
+import { faMobileAlt, faRss, faCheckCircle, faTimesCircle, faInfoCircle } from "@fortawesome/free-solid-svg-icons"
 
 const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
   const [isReading, setIsReading] = useState(false)
@@ -145,6 +145,10 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
 
   const handleNFCError = (error) => {
     console.error("❌ NFC reading error:", error)
+
+    // If the status is already "info" or we're showing a specific message, don't override with generic error
+    if (nfcStatus === "info" || nfcStatus === "success") return
+
     setNfcStatus("error")
     console.log("❌ Error reading NFC tag. Please try again.")
 
@@ -267,8 +271,8 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
 
         if (isItemInCart(product.id)) {
           setTimeout(() => {
-            setNfcStatus("error")
-            console.log(`⚠️ ${product.name} is already in your cart!`)
+            setNfcStatus("info")
+            console.log(`[v0] Duplicate product detected: ${product.name}`)
 
             setTimeout(() => {
               if (isReading) {
@@ -415,6 +419,8 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
               <FontAwesomeIcon icon={faRss} />
             ) : nfcStatus === "success" ? (
               <FontAwesomeIcon icon={faCheckCircle} />
+            ) : nfcStatus === "info" ? (
+              <FontAwesomeIcon icon={faInfoCircle} />
             ) : nfcStatus === "error" ? (
               <FontAwesomeIcon icon={faTimesCircle} />
             ) : (
@@ -434,7 +440,9 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
                 ? "var(--secondary-color)"
                 : nfcStatus === "error"
                   ? "var(--danger-color)"
-                  : "var(--text-primary)",
+                  : nfcStatus === "info"
+                    ? "var(--info-color)"
+                    : "var(--text-primary)",
             minHeight: "60px",
             display: "flex",
             alignItems: "center",
@@ -447,9 +455,11 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
             ? "🎯 Ready to read NFC tags - Tap a product tag"
             : nfcStatus === "success"
               ? "✅ Product added successfully!"
-              : nfcStatus === "error"
-                ? "❌ Error reading tag"
-                : "Initializing NFC reader..."}
+              : nfcStatus === "info"
+                ? "ℹ️ This product is already in your cart"
+                : nfcStatus === "error"
+                  ? "❌ Error reading tag"
+                  : "Initializing NFC reader..."}
         </motion.div>
 
         <div
