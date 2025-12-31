@@ -104,7 +104,7 @@ const generateInvoiceHTML = (orderData) => {
                   <p style="margin: 0;">📧 <a href="mailto:scantappay@gmail.com" style="color: white; text-decoration: none;">scantappay@gmail.com</a></p>
                   <p style="margin: 0;">📞 7575841397 / 8511231514</p>
                   <p style="margin: 0;">🏢 Office no. - 16, Digital Plaza, Mumbai - 400001</p>
-                  <p style="margin: 8px 0 0 0;">🌐 <a href="https://scan-tap-pay.vercel.app/" style="color: white; font-weight: 600;">visit us: scan-tap-pay.vercel.app</a></p>
+                  <p style="margin: 8px 0 0 0;">🌐 <a href="https://scantappay.vercel.app/" style="color: white; font-weight: 600;">visit us: scantappay.vercel.app</a></p>
                 </div>
               </td>
               <td align="right" valign="top">
@@ -204,7 +204,7 @@ const generateInvoiceHTML = (orderData) => {
               📧 <span style="font-weight: 500;">scantappay@gmail.com</span> | 📞 <span style="font-weight: 500;">7575841397 / 8511231514</span>
             </p>
             <p style="margin: 0;">
-              🌐 visit us: <a href="https://scan-tap-pay.vercel.app/" class="footer-link">https://scan-tap-pay.vercel.app/</a>
+              🌐 visit us: <a href="https://scantappay.vercel.app/" class="footer-link">https://scantappay.vercel.app/</a>
             </p>
           </div>
         </div>

@@ -8,13 +8,13 @@ const getApiBaseUrl = () => {
   const manualOverride = typeof window !== "undefined" ? localStorage.getItem("api-environment") : null
 
   if (manualOverride === "local") return "http://localhost:5000/api"
-  if (manualOverride === "deployed") return "https://stp-rust.vercel.app/api"
+  if (manualOverride === "deployed") return "https://scantappayserver.vercel.app/api"
 
   // 2. Determine base URL from environment variables or defaults
   let baseUrl = ""
 
   if (import.meta.env.VITE_NODE_ENV === "production") {
-    baseUrl = import.meta.env.VITE_DEPLOYED_API_URL || "https://stp-rust.vercel.app/api"
+    baseUrl = import.meta.env.VITE_DEPLOYED_API_URL || "https://scantappayserver.vercel.app/api"
   } else {
     baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
   }

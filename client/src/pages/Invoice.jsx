@@ -217,10 +217,10 @@ const Invoice = () => {
                       <p style={{ margin: "10px 0 0 0" }}>
                         🌐 visit us:{" "}
                         <a
-                          href="https://scan-tap-pay.vercel.app/"
+                          href="https://scantappay.vercel.app/"
                           style={{ color: "white", textDecoration: "underline" }}
                         >
-                          https://scan-tap-pay.vercel.app/
+                          https://scantappay.vercel.app/
                         </a>
                       </p>
                     </div>
