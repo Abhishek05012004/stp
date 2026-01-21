@@ -25,6 +25,7 @@ import {
   faUsers,
   faClock,
   faStar,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons"
 
 const LandingPage = () => {
@@ -389,21 +390,70 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      {/* Video Modal */}
+      {/* Enhanced Video Modal */}
       {showVideo && (
-        <div className="video-modal-overlay" onClick={handleCloseVideo}>
-          <div className="video-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="close-button" onClick={handleCloseVideo}>
-              ×
-            </button>
-            <div className="video-container">
-              <video ref={videoRef} controls autoPlay style={{ width: "100%", height: "auto" }}>
-                <source src="/demo.mp4" type="video/mp4" />
-                Your browser does not support the video.
-              </video>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="video-modal-overlay"
+          onClick={handleCloseVideo}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="video-modal-container"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="video-modal-header">
+              <h3 className="video-modal-title">
+                <FontAwesomeIcon icon={faPlayCircle} style={{ marginRight: "8px" }} />
+                Scan Tap Pay Demo
+              </h3>
+              <button className="video-modal-close" onClick={handleCloseVideo}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
             </div>
-          </div>
-        </div>
+            <div className="video-modal-content">
+              <video
+                ref={videoRef}
+                controls
+                autoPlay
+                muted
+                className="demo-video"
+                poster="/demo-thumbnail.jpg"
+              >
+                <source src="/demo.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <div className="video-modal-info">
+                <p className="video-modal-description">
+                  Watch how Scan Tap Pay makes shopping effortless with QR scanning and NFC tap technology.
+                </p>
+                <div className="video-modal-features">
+                  <div className="video-modal-feature">
+                    <FontAwesomeIcon icon={faQrcode} />
+                    <span>QR Code Scanning</span>
+                  </div>
+                  <div className="video-modal-feature">
+                    <FontAwesomeIcon icon={faMobileScreen} />
+                    <span>NFC Tap & Pay</span>
+                  </div>
+                  <div className="video-modal-feature">
+                    <FontAwesomeIcon icon={faCreditCard} />
+                    <span>Secure Payment</span>
+                  </div>
+                  <div className="video-modal-feature">
+                    <FontAwesomeIcon icon={faReceipt} />
+                    <span>Instant Receipt</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   )
