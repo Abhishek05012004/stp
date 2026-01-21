@@ -399,7 +399,7 @@ const LandingPage = () => {
             <div className="video-container">
               <video ref={videoRef} controls autoPlay style={{ width: "100%", height: "auto" }}>
                 <source src="/demo.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
+                Your browser does not support the video.
               </video>
             </div>
           </div>
