@@ -98,8 +98,7 @@ const LandingPage = () => {
   const mainFeatures = [
     {
       title: "QR Code Shopping Feature",
-      description:
-        "Kisi bhi product ka QR code scan karein, product aapke cart mein automatically add ho jayega aur aap proceed to payment kar sakte hain.",
+      description: "Scan any product QR code, the product will be automatically added to your cart and you can proceed to payment.",
       items: [
         "QR code scanning for instant product identification",
         "Automatically adds to shopping cart",
@@ -111,8 +110,7 @@ const LandingPage = () => {
     },
     {
       title: "NFC Tap & Pay Feature",
-      description:
-        "NFC-enabled phone se product tag par tap karein, instant purchase complete karein aur automatic bill generate ho jayega.",
+      description: "Tap your NFC-enabled phone on product tags for instant purchase and automatic bill generation.",
       items: [
         "Tap NFC tags with your phone",
         "Instant product addition to cart",
@@ -128,20 +126,19 @@ const LandingPage = () => {
     {
       number: "01",
       title: "Scan QR Code",
-      description: "Product ke QR code ko apne phone se scan karein. Product details automatically fetch ho jayenge.",
+      description: "Scan the product QR code with your phone. Product details will be automatically fetched.",
       features: ["Instant QR recognition", "Product info auto-filled", "Price & details shown", "One-tap add to cart"],
     },
     {
       number: "02",
       title: "Add to Cart",
-      description:
-        "Product aapke shopping cart mein automatically add ho jayega. Quantity aur options adjust kar sakte hain.",
+      description: "The product will be automatically added to your shopping cart. Adjust quantity and options as needed.",
       features: ["Automatic cart addition", "Quantity adjustment", "Price calculation", "Cart management"],
     },
     {
       number: "03",
       title: "Pay Online",
-      description: "Secure payment gateway se online payment complete karein. Instant confirmation milega.",
+      description: "Complete online payment through secure payment gateway. Get instant confirmation.",
       features: ["Multiple payment options", "Secure transaction", "Instant confirmation", "Digital receipt"],
     },
   ]
@@ -171,8 +168,7 @@ const LandingPage = () => {
               <span className="hero-title-gradient"> Tap & Scan</span>
             </h1>
             <p className="hero-description">
-              QR code scan karein ya NFC tag tap karein - product instantly cart mein add ho jayega aur secure payment
-              se purchase complete karein. Bill automatically generate hoga.
+              Scan QR codes or tap NFC tags - products instantly add to your cart and complete secure payment. Bills are automatically generated.
             </p>
 
             <div className="hero-actions">
@@ -215,22 +211,22 @@ const LandingPage = () => {
                   {
                     icon: <FontAwesomeIcon icon={faCamera} />,
                     title: "Scan QR Code",
-                    description: "Product QR scan karein",
+                    description: "Scan product QR code",
                   },
                   {
                     icon: <FontAwesomeIcon icon={faShoppingCart} />,
                     title: "Add to Cart",
-                    description: "Automatically cart mein jayega",
+                    description: "Automatically added to cart",
                   },
                   {
                     icon: <FontAwesomeIcon icon={faCreditCard} />,
                     title: "Pay Online",
-                    description: "Secure payment complete karein",
+                    description: "Complete secure payment",
                   },
                   {
                     icon: <FontAwesomeIcon icon={faReceipt} />,
                     title: "Get Receipt",
-                    description: "Email par bill aa jayega",
+                    description: "Bill sent to your email",
                   },
                 ].map((item, index) => (
                   <div key={index} className="hero-card-item">
@@ -279,7 +275,7 @@ const LandingPage = () => {
           <span className="section-subtitle">Core Features</span>
           <h2 className="section-title">Key Shopping Features</h2>
           <p className="section-description">
-            Hamare do major features jo aapki shopping experience ko transform karenge
+            Our two major features that will transform your shopping experience
           </p>
         </div>
 
