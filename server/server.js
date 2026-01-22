@@ -27,7 +27,7 @@ connectDB()
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["https://scantappay.vercel.app", "http://localhost:3000", "http://localhost:5173"]
+  : ["https://scantappay.vercel.app","https://scantappay.flyanytrip.com", "http://localhost:3000", "http://localhost:5173"]
 
 // Always allow requests with no origin (like Postman, mobile apps)
 allowedOrigins.push(undefined)
