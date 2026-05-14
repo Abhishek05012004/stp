@@ -17,8 +17,8 @@ import {
   faFileInvoice,
 } from "@fortawesome/free-solid-svg-icons"
 
-// Import the invoice generation function
-import { generateInvoiceHTML } from "./Invoice.jsx"
+// Import the invoice generation function and InvoiceDisplay component
+import { generateInvoiceHTML } from "../components/InvoiceTemplate"
 
 const Payment = () => {
   const { items, getTotal, clearCart } = useCart()
@@ -310,7 +310,7 @@ const Payment = () => {
       try {
         // Generate invoice HTML using the unified function
         const invoiceHTML = generateInvoiceHTML(orderData)
-        
+
         const emailResponse = await fetch(getFullUrl("/payment/send-invoice"), {
           method: "POST",
           headers: {
