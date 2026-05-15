@@ -97,9 +97,9 @@ const Cart = () => {
         <Link to="/" className="nav-btn secondary">
           <FontAwesomeIcon icon={faArrowLeft} /> Back to Home
         </Link>
-        <Link to="/scanner" className="nav-btn">
+        <button onClick={() => navigate(-1)} className="nav-btn">
           <FontAwesomeIcon icon={faArrowLeft} /> Continue Shopping
-        </Link>
+        </button>
         <button onClick={handleClearCart} className="nav-btn danger">
           <FontAwesomeIcon icon={faTrashCan} /> Clear Cart
         </button>

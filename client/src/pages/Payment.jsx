@@ -216,7 +216,7 @@ const Payment = () => {
       }
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_test_RH0I6LBnmc0Ziz",
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_RH0I6LBnmc0Ziz",
         amount: orderData.amount,
         currency: orderData.currency,
         name: "QR Scanner Store",

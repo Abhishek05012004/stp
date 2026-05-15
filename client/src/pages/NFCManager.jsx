@@ -40,15 +40,13 @@ const NFCManager = () => {
         </Link>
         <button
           onClick={() => setActiveTab("writer")}
-          className="nav-btn"
-          style={{ background: activeTab === "writer" ? "#4CAF50" : "#2196f3" }}
+          className={`nav-btn primary ${activeTab === "writer" ? "active-tab" : ""}`}
         >
           <FontAwesomeIcon icon={faFilePen} /> Write Tags
         </button>
         <button
           onClick={() => setActiveTab("reader")}
-          className="nav-btn"
-          style={{ background: activeTab === "reader" ? "#4CAF50" : "#FF9800" }}
+          className={`nav-btn accent ${activeTab === "reader" ? "active-tab" : ""}`}
         >
           <FontAwesomeIcon icon={faMobileAlt} /> Test Reader
         </button>

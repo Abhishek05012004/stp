@@ -89,9 +89,9 @@ const LandingPage = () => {
       description: "Auto-generated bills and receipts sent directly to your email",
     },
     {
-      icon: <FontAwesomeIcon icon={faChartLine} className="fa-icon-large" />,
-      title: "Real-time Tracking",
-      description: "Track all your purchases and payments in real-time",
+      icon: <FontAwesomeIcon icon={faUsers} className="fa-icon-large" />,
+      title: "No Login Required",
+      description: "Experience the complete shopping process instantly without creating an account",
     },
   ]
 
@@ -117,7 +117,7 @@ const LandingPage = () => {
         "Contactless payment processing",
         "Auto-generated bill PDF",
         "Email delivery of receipt",
-        "Transaction history tracking",
+        "Secure encrypted transaction",
       ],
     },
   ]
@@ -125,9 +125,9 @@ const LandingPage = () => {
   const steps = [
     {
       number: "01",
-      title: "Scan QR Code",
-      description: "Scan the product QR code with your phone. Product details will be automatically fetched.",
-      features: ["Instant QR recognition", "Product info auto-filled", "Price & details shown", "One-tap add to cart"],
+      title: "Scan or Tap",
+      description: "Scan the product QR code or tap the NFC tag with your phone. Product details will be automatically fetched.",
+      features: ["Instant recognition", "NFC tap support", "Product info auto-filled", "One-tap add to cart"],
     },
     {
       number: "02",
@@ -140,6 +140,12 @@ const LandingPage = () => {
       title: "Pay Online",
       description: "Complete online payment through secure payment gateway. Get instant confirmation.",
       features: ["Multiple payment options", "Secure transaction", "Instant confirmation", "Digital receipt"],
+    },
+    {
+      number: "04",
+      title: "Get Receipt",
+      description: "A detailed digital bill is automatically generated and sent directly to your email.",
+      features: ["Auto-generated bill", "Email delivery", "Instant generation", "Downloadable PDF"],
     },
   ]
 
@@ -165,7 +171,7 @@ const LandingPage = () => {
             <span className="hero-badge">✨ Future of Shopping</span>
             <h1 className="hero-title">
               Shop with
-              <span className="hero-title-gradient"> Tap & Scan</span>
+              <span className="hero-title-gradient"> Scan & Tap</span>
             </h1>
             <p className="hero-description">
               Scan QR codes or tap NFC tags - products instantly add to your cart and complete secure payment. Bills are automatically generated.
@@ -210,8 +216,8 @@ const LandingPage = () => {
                 {[
                   {
                     icon: <FontAwesomeIcon icon={faCamera} />,
-                    title: "Scan QR Code",
-                    description: "Scan product QR code",
+                    title: "Scan or Tap",
+                    description: "Scan QR or Tap NFC tag",
                   },
                   {
                     icon: <FontAwesomeIcon icon={faShoppingCart} />,

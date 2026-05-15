@@ -49,6 +49,28 @@
   --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+html {
+  font-size: 16px;
+}
+
+@media (max-width: 1024px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 12px;
+  }
+}
+
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
     "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
@@ -127,10 +149,18 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  z-index: 1;
 }
+
+.nav-btn.active-tab {
+  outline: 3px solid var(--text-primary);
+  outline-offset: 2px;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 
 .nav-btn::before {
   content: "";
@@ -141,6 +171,12 @@ body {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   transition: left 0.5s;
+}
+
+@media (max-width: 480px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
 }
 
 .nav-btn:hover::before {
@@ -835,10 +871,30 @@ body {
     justify-content: center;
   }
 
+  .cart-container {
+    padding: 1rem;
+  }
+
   .cart-item {
     flex-direction: column;
     text-align: center;
     padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  .cart-item img {
+    margin-bottom: 0.5rem;
+  }
+
+  .quantity-controls {
+    justify-content: center;
+    width: 100%;
+    margin: 1rem 0;
+  }
+
+  .remove-btn {
+    width: 100%;
+    margin-top: 0.5rem;
   }
 
   .scanner-video {

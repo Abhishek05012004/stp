@@ -56,7 +56,7 @@ transform: rotate(30deg) translate(20%, 20%);
 }
 
 .header h1 {
-font-size: 2.5rem;
+font-size: clamp(1.5rem, 5vw, 2.5rem);
 font-weight: 800;
 margin-bottom: 0.5rem;
 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -72,7 +72,7 @@ transform: scale(1.05);
 .header h1::after {
 content: "";
 position: absolute;
-bottom: -10px;
+bottom: -2px;
 left: 50%;
 width: 0;
 height: 3px;
@@ -87,7 +87,7 @@ width: 80px;
 }
 
 .header p {
-font-size: 1.125rem;
+font-size: clamp(0.875rem, 3vw, 1.125rem);
 opacity: 0.9;
 font-weight: 400;
 transition: all 0.3s ease;
@@ -133,13 +133,5 @@ opacity: 1;
 @media (max-width: 768px) {
 .header {
 padding: 1.5rem;
-}
-
-.header h1 {
-font-size: 2rem;
-}
-
-.header p {
-font-size: 1rem;
 }
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import QRScannerComponent from "../components/QRScanner.jsx"
 import ManualProductEntry from "../components/ManualProductEntry.jsx"
@@ -32,11 +32,19 @@ import { useCart } from "../utils/CartContext.jsx" // Corrected import for useCa
 import "../styles/header.css"
 
 const Home = () => {
-  const { getItemCount, items, clearCart } = useCart() // Use the imported hook
+  const { getItemCount, items, clearCart } = useCart()
+  const location = useLocation()
+  const navigate = useNavigate()
+  
+  let currentMode = "qr"
+  if (location.pathname === "/nfc-reader") currentMode = "nfc"
+  if (location.pathname === "/manual-entry") currentMode = "manual"
+  
+  const scanMode = currentMode === "nfc" ? "nfc" : "qr"
+  const showManualEntry = currentMode === "manual"
+
   const [isScannerActive, setIsScannerActive] = useState(true)
   const [lastAddedProduct, setLastAddedProduct] = useState(null)
-  const [showManualEntry, setShowManualEntry] = useState(false)
-  const [scanMode, setScanMode] = useState("qr") // "qr" or "nfc"
 
   useEffect(() => {
     updatePageMeta(
@@ -70,13 +78,14 @@ const Home = () => {
   }
 
   const toggleManualEntry = () => {
-    setShowManualEntry(!showManualEntry)
-    console.log(showManualEntry ? "Scanner mode activated" : "Manual entry mode activated")
+    navigate('/manual-entry')
+    console.log("Manual entry mode activated")
   }
 
-  const handleScanModeChange = (mode) => {
-    setScanMode(mode)
-    console.log(mode === "qr" ? "QR Scanner activated" : "NFC Reader activated")
+  const handleScanModeChange = (newMode) => {
+    if (newMode === "qr") navigate('/scanner')
+    if (newMode === "nfc") navigate('/nfc-reader')
+    console.log(newMode === "qr" ? "QR Scanner activated" : "NFC Reader activated")
   }
 
   return (
@@ -88,9 +97,9 @@ const Home = () => {
         transition={{ duration: 0.6 }}
       >
         <h1>
-          <FontAwesomeIcon icon={faRocket} /> Scan Tap Pay Scanner
+          <FontAwesomeIcon icon={faRocket} /> Scan Tap Pay
         </h1>
-        <p>Scan QR codes & NFC tags to add products instantly</p>
+        <p>Scan QR code or tap on NFC tag of any product to add it to your cart</p>
       </motion.div>
 
       <motion.div
@@ -107,11 +116,7 @@ const Home = () => {
           <FontAwesomeIcon icon={faShoppingCart} /> Cart ({getItemCount()})
         </Link>
 
-        {items.length > 0 && (
-          <Link to="/cart" className="nav-btn primary">
-            <FontAwesomeIcon icon={faCreditCard} /> Checkout
-          </Link>
-        )}
+
 
         <Link to="/nfc-manager" className="nav-btn accent">
           <FontAwesomeIcon icon={faMobileAlt} /> NFC Manager
@@ -119,44 +124,23 @@ const Home = () => {
 
         <button
           onClick={() => handleScanModeChange("qr")}
-          className={`nav-btn ${scanMode === "qr" ? "primary" : "info"}`}
+          className={`nav-btn primary ${currentMode === "qr" ? "active-tab" : ""}`}
         >
-          {scanMode === "qr" ? (
-            <>
-              <FontAwesomeIcon icon={faQrcode} /> QR Active
-            </>
-          ) : (
-            <>
-              <FontAwesomeIcon icon={faQrcode} /> QR Scanner
-            </>
-          )}
+          <FontAwesomeIcon icon={faQrcode} /> QR Scanner
         </button>
 
         <button
           onClick={() => handleScanModeChange("nfc")}
-          className={`nav-btn ${scanMode === "nfc" ? "primary" : "accent"}`}
+          className={`nav-btn accent ${currentMode === "nfc" ? "active-tab" : ""}`}
         >
-          {scanMode === "nfc" ? (
-            <>
-              <FontAwesomeIcon icon={faMobileAlt} /> NFC Active
-            </>
-          ) : (
-            <>
-              <FontAwesomeIcon icon={faMobileAlt} /> NFC Reader
-            </>
-          )}
+          <FontAwesomeIcon icon={faMobileAlt} /> NFC Reader
         </button>
 
-        <button onClick={toggleManualEntry} className={`nav-btn ${showManualEntry ? "accent" : "info"}`}>
-          {showManualEntry ? (
-            <>
-              <FontAwesomeIcon icon={faQrcode} /> Show Scanner
-            </>
-          ) : (
-            <>
-              <FontAwesomeIcon icon={faFilePen} /> Manual Entry
-            </>
-          )}
+        <button 
+          onClick={toggleManualEntry} 
+          className={`nav-btn info ${currentMode === "manual" ? "active-tab" : ""}`}
+        >
+          <FontAwesomeIcon icon={faFilePen} /> Manual Entry
         </button>
 
         {items.length > 0 && (
@@ -252,13 +236,13 @@ const Home = () => {
           <FontAwesomeIcon icon={faBookOpen} /> How to Use
         </h3>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "2rem",
-          }}
-        >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 250px), 1fr))",
+                gap: "2rem",
+              }}
+            >
           <div>
             <h4
               style={{
@@ -283,6 +267,7 @@ const Home = () => {
                 paddingLeft: "1.5rem",
                 lineHeight: "1.8",
                 color: "var(--text-secondary)",
+                wordBreak: "break-word",
               }}
             >
               {showManualEntry ? (
@@ -319,30 +304,40 @@ const Home = () => {
             </h4>
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
+                display: "inline-flex",
+                flexDirection: "column",
                 gap: "0.75rem",
                 fontSize: "0.875rem",
+                width: "max-content",
               }}
             >
-              <div className="badge primary">
-                <FontAwesomeIcon icon={faUtensils} /> Food: FOOD001-015
-              </div>
-              <div className="badge info">
-                <FontAwesomeIcon icon={faLaptop} /> Electronics: ELEC001-020
-              </div>
-              <div className="badge secondary">
-                <FontAwesomeIcon icon={faShirt} /> Clothes: CLTH001-020
-              </div>
-              <div className="badge warning">
-                <FontAwesomeIcon icon={faBook} /> Books: BOOK001-015
-              </div>
-              <div className="badge danger">
-                <FontAwesomeIcon icon={faHouse} /> Home: HOME001-015
-              </div>
-              <div className="badge primary">
-                <FontAwesomeIcon icon={faFutbol} /> Sports: SPRT001-015
-              </div>
+              {[
+                { icon: faUtensils, category: "Food", id: "FOOD001-015", className: "primary" },
+                { icon: faLaptop, category: "Electronics", id: "ELEC001-020", className: "info" },
+                { icon: faShirt, category: "Clothes", id: "CLTH001-020", className: "secondary" },
+                { icon: faBook, category: "Books", id: "BOOK001-015", className: "warning" },
+                { icon: faHouse, category: "Home", id: "HOME001-015", className: "danger" },
+                { icon: faFutbol, category: "Sports", id: "SPRT001-015", className: "primary" },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className={`badge ${item.className}`}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1.5rem 7rem 0.5rem auto",
+                    alignItems: "center",
+                    textAlign: "left",
+                    padding: "0.5rem 1rem",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <FontAwesomeIcon icon={item.icon} />
+                  </div>
+                  <span>{item.category}</span>
+                  <span>:</span>
+                  <span>{item.id}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

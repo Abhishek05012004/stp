@@ -102,26 +102,28 @@ const ManualProductEntry = ({ onProductAdded }) => {
     setIsLoading(true)
 
     try {
-      const product = await getProductById(id)
+      // Use locally loaded product to make it instant!
+      let product = allProducts[id]
+      
+      if (!product) {
+        product = await getProductById(id)
+      }
 
       if (!product) {
         showToastOnce(`Product ${id} not found`, "error")
+        setIsLoading(false)
         return
       }
 
       if (isItemInCart(product.id)) {
         showToastOnce(`${product.name} is already in your cart!`, "error")
+        setIsLoading(false)
         return
       }
 
-      const stockValidation = await validateStockForCart(product.id, 1)
-
-      if (!stockValidation.available) {
-        if (stockValidation.availableStock === 0) {
-          showToastOnce(`Sorry! ${product.name} is out of stock`, "error")
-        } else {
-          showToastOnce(`Only ${stockValidation.availableStock} ${product.name} available in stock`, "error")
-        }
+      if (product.stock === 0) {
+        showToastOnce(`Sorry! ${product.name} is out of stock`, "error")
+        setIsLoading(false)
         return
       }
 
@@ -208,12 +210,12 @@ const ManualProductEntry = ({ onProductAdded }) => {
           {showProductList ? (
             <>
               <FontAwesomeIcon icon={faChevronUp} style={{ marginRight: "0.5rem" }} />
-              Hide Products
+              <span className="hide-on-mobile">Hide Products</span>
             </>
           ) : (
             <>
               <FontAwesomeIcon icon={faChevronDown} style={{ marginRight: "0.5rem" }} />
-              Show Products
+              <span className="hide-on-mobile">Show Products</span>
             </>
           )}
         </button>
@@ -310,13 +312,13 @@ const ManualProductEntry = ({ onProductAdded }) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="form-input"
-                style={{ flex: "1", minWidth: "200px" }}
+                style={{ flex: "1", minWidth: "min(100%, 200px)" }}
               />
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="form-input"
-                style={{ minWidth: "150px" }}
+                style={{ minWidth: "min(100%, 150px)" }}
               >
                 <option value="all">All Categories</option>
                 {categories.map((category) => (
@@ -330,7 +332,7 @@ const ManualProductEntry = ({ onProductAdded }) => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 250px), 1fr))",
                 gap: "1.5rem",
                 maxHeight: "650px",
                 overflowY: "auto",
@@ -355,7 +357,6 @@ const ManualProductEntry = ({ onProductAdded }) => {
                         background: "var(--bg-card)",
                         display: "flex",
                         flexDirection: "column",
-                        minHeight: "400px",
                         cursor: "pointer",
                         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                       }}
@@ -386,34 +387,7 @@ const ManualProductEntry = ({ onProductAdded }) => {
                       />
 
                       <div
-                        className="badge primary"
                         style={{
-                          position: "absolute",
-                          top: "1rem",
-                          right: "1rem",
-                          zIndex: 1,
-                        }}
-                      >
-                        {product.id}
-                      </div>
-
-                      {product.category && (
-                        <div
-                          className="badge info"
-                          style={{
-                            position: "absolute",
-                            top: "1rem",
-                            left: "1rem",
-                            zIndex: 1,
-                          }}
-                        >
-                          {product.category}
-                        </div>
-                      )}
-
-                      <div
-                        style={{
-                          marginTop: "2rem",
                           display: "flex",
                           flexDirection: "column",
                           flex: 1,
@@ -421,6 +395,16 @@ const ManualProductEntry = ({ onProductAdded }) => {
                           zIndex: 1,
                         }}
                       >
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: "0.5rem", marginBottom: "1rem", flexWrap: "wrap", alignItems: "flex-start" }}>
+                          {product.category && (
+                            <div className="badge info">
+                              {product.category}
+                            </div>
+                          )}
+                          <div className="badge primary" style={{ marginLeft: "auto" }}>
+                            {product.id}
+                          </div>
+                        </div>
                         <div
                           className="product-card-img-container"
                           style={{
@@ -461,6 +445,7 @@ const ManualProductEntry = ({ onProductAdded }) => {
                             color: "var(--text-secondary)",
                             fontSize: "0.875rem",
                             lineHeight: "1.5",
+                            flexGrow: 1,
                           }}
                         >
                           {product.description}
@@ -472,6 +457,8 @@ const ManualProductEntry = ({ onProductAdded }) => {
                             justifyContent: "space-between",
                             alignItems: "center",
                             marginBottom: "1rem",
+                            flexWrap: "nowrap",
+                            gap: "0.5rem",
                           }}
                         >
                           <span
@@ -486,11 +473,9 @@ const ManualProductEntry = ({ onProductAdded }) => {
                           {product.stock !== undefined && (
                             <span
                               className={`badge ${product.stock === 0 ? "danger" : product.stock <= 5 ? "warning" : "secondary"}`}
-                              style={{ fontSize: "0.75rem" }}
+                              style={{ fontSize: "0.7rem", whiteSpace: "nowrap" }}
                             >
-                              Stock: {product.stock}
-                              {product.stock === 0 && " (Out of Stock)"}
-                              {product.stock > 0 && product.stock <= 5 && " (Low Stock)"}
+                              {product.stock === 0 ? "Out of Stock" : product.stock <= 5 ? `Low Stock: ${product.stock}` : `Stock: ${product.stock}`}
                             </span>
                           )}
                         </div>
@@ -502,7 +487,7 @@ const ManualProductEntry = ({ onProductAdded }) => {
                             justifyContent: "center",
                             opacity: product.stock === 0 ? 0.5 : 1,
                             cursor: product.stock === 0 ? "not-allowed" : "pointer",
-                            marginTop: "auto",
+                            marginTop: "1rem",
                           }}
                           onClick={(e) => {
                             if (product.stock === 0) {

@@ -65,7 +65,7 @@
 }
 
 .hero-title {
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-size: clamp(2rem, 8vw, 3.5rem);
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 1.5rem;
@@ -314,7 +314,7 @@
 }
 
 .section-title {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.75rem, 6vw, 3rem);
   font-weight: 800;
   color: #f8fafc;
   line-height: 1.2;
@@ -623,7 +623,7 @@
 }
 
 .cta-title {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.75rem, 6vw, 3rem);
   font-weight: 800;
   margin-bottom: 1.5rem;
   line-height: 1.2;
@@ -859,46 +859,91 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .hero-container {
-    padding: 0 1rem;
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 4rem 1rem 2rem;
+  }
+
+  .hero-container {
+    padding: 0;
     grid-template-columns: 1fr;
     gap: 3rem;
+    text-align: center;
+  }
+  
+  .hero-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+    margin-bottom: 2rem;
   }
   
   .hero-stats {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
+    width: 100%;
+    margin-top: 2rem;
+    padding-top: 2rem;
+  }
+  
+  .hero-stat {
+    text-align: center;
   }
   
   .hero-actions {
     flex-direction: column;
+    width: 100%;
+    gap: 1rem;
   }
   
   .hero-button {
     width: 100%;
-    max-width: 300px;
+    max-width: 100%;
     justify-content: center;
   }
   
   .step {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
+    text-align: center;
   }
   
+  .step-number {
+    margin: 0 auto;
+  }
+
   .step-line::before {
     display: none;
   }
-  
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
+
+  .step-features {
+    text-align: left;
   }
   
   .feature-card {
     padding: 2rem 1.5rem;
   }
+
+  .section-description {
+    font-size: 1rem;
+  }
   
+  .cta-description {
+    font-size: 1rem;
+  }
+
   .video-modal-container {
     max-height: 90vh;
   }
@@ -927,12 +972,9 @@
 }
 
 @media (max-width: 480px) {
-  .hero-title {
-    font-size: 2rem;
-  }
-  
-  .section-title {
-    font-size: 1.75rem;
+  .hero-stats {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
   
   .features-grid {
@@ -971,6 +1013,10 @@
   
   .video-modal-feature span {
     font-size: 0.9rem;
+  }
+
+  .step-features {
+    grid-template-columns: 1fr;
   }
 }
 

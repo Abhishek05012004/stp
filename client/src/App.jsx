@@ -1,6 +1,6 @@
 "use client"
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { CartProvider } from "./utils/CartContext.jsx"
 import { AuthProvider, withAuth } from "./utils/AuthContext.jsx"
 import LandingPage from "./pages/LandingPage.jsx"
@@ -30,6 +30,8 @@ function App() {
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/scanner" element={<Home />} />
+              <Route path="/nfc-reader" element={<Home />} />
+              <Route path="/manual-entry" element={<Home />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/payment" element={<Payment />} />
               <Route path="/invoice" element={<Invoice />} />

@@ -13,7 +13,10 @@ const getApiBaseUrl = () => {
   // 2. Determine base URL from environment variables or defaults
   let baseUrl = ""
 
-  if (import.meta.env.VITE_NODE_ENV === "production") {
+  // Use Vite's built-in PROD flag or MODE variable
+  const isProduction = import.meta.env.PROD || import.meta.env.MODE === "production" || import.meta.env.VITE_NODE_ENV === "production"
+
+  if (isProduction) {
     baseUrl = import.meta.env.VITE_DEPLOYED_API_URL || "https://scantappayserver.vercel.app/api"
   } else {
     baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"

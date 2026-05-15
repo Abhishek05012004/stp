@@ -340,7 +340,7 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
         animate={{ opacity: 0.5 }}
         style={{ pointerEvents: "none" }}
       >
-        <div className="empty-state" style={{ height: "400px" }}>
+        <div className="empty-state" style={{ minHeight: "400px" }}>
           <div className="empty-state-icon">
             <FontAwesomeIcon icon={faMobileAlt} />
           </div>
@@ -359,7 +359,7 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="empty-state" style={{ height: "400px", background: "rgba(245, 158, 11, 0.1)" }}>
+        <div className="empty-state" style={{ minHeight: "400px", background: "rgba(245, 158, 11, 0.1)", padding: "2rem" }}>
           <div className="empty-state-icon">
             <FontAwesomeIcon icon={faMobileAlt} />
           </div>
