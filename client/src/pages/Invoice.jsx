@@ -6,304 +6,7 @@ import html2pdf from "html2pdf.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFileInvoice, faArrowsRotate, faArrowLeft } from "@fortawesome/free-solid-svg-icons"
 
-// Export function to generate invoice HTML for email
-export const generateInvoiceHTML = (orderData) => {
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
-
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>Invoice - ${orderData.id}</title>
-      <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', 'Arial', sans-serif; background-color: #f3f4f6; }
-        table { border-spacing: 0; border-collapse: collapse; }
-        td { padding: 0; }
-        .wrapper { width: 100%; table-layout: fixed; background-color: #f3f4f6; padding: 20px 0; }
-        .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 700px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border: 1px solid #e2e8f0; }
-        
-        /* Updated styles for better visibility, spacing and removing borders */
-        /* Header Section */
-        .header-bg { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 35px; }
-        .header-box { background: rgba(255,255,255,0.12); border-radius: 12px; padding: 20px; }
-        .sent-to-box { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 15px; }
-        
-        /* Details Cards */
-        .details-card { background: #f8fafc; border-radius: 12px; padding: 22px; }
-        .payment-card { background: #ecfdf5; border-radius: 12px; padding: 22px; }
-        
-        /* Table Styling */
-        .items-table-container { border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .items-table th { background-color: #f1f5f9; padding: 15px; text-align: left; font-size: 11px; color: #475569; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px; }
-        .items-table td { padding: 15px; font-size: 13px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
-        
-        /* Helper for white text in blue area */
-        .text-white { color: #ffffff !important; }
-        .link-white { color: #ffffff !important; text-decoration: none !important; }
-        
-        /* Responsive Stacking */
-        @media screen and (max-width: 600px) {
-          .col-stack { display: block !important; width: 100% !important; max-width: 100% !important; }
-          .col-spacer { height: 20px !important; display: block !important; width: 0 !important; }
-          .header-right { text-align: left !important; margin-top: 20px; }
-          .main { border-radius: 0 !important; }
-          .mobile-hide { display: none !important; }
-        }
-      </style>
-    </head>
-    <body>
-      <center class="wrapper">
-        <table class="main" width="100%" cellpadding="0" cellspacing="0">
-          <!-- Blue Header - Matches Website -->
-          <tr>
-            <td class="header-bg">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <!-- Company Left Side -->
-                  <td class="col-stack" style="vertical-align: top; width: 55%;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding-bottom: 30px;">
-                          <table cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="background: rgba(255, 255, 255, 0.2); border-radius: 10px; width: 52px; height: 52px; text-align: center;">
-                                <img src="https://img.icons8.com/ios-filled/50/ffffff/bank-cards.png" width="28" height="28" style="vertical-align: middle;" alt="Logo">
-                              </td>
-                              <td style="padding-left: 18px;">
-                                <div class="text-white" style="font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: 0.5px; text-transform: uppercase;">SCAN TAP PAY</div>
-                                <div class="text-white" style="font-size: 12px; opacity: 0.9; padding-top: 5px;">Smart Payment Solutions</div>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="font-size: 11px; line-height: 2.2;">
-                          <table cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td width="24"><img src="https://img.icons8.com/ios-filled/20/ffffff/new-post.png" width="14" height="14"></td>
-                              <td class="text-white">scantappay@gmail.com</td>
-                            </tr>
-                            <tr>
-                              <td width="24"><img src="https://img.icons8.com/ios-filled/20/ffffff/phone.png" width="14" height="14"></td>
-                              <td class="text-white">7575841397 / 8511231514</td>
-                            </tr>
-                            <tr>
-                              <td width="24"><img src="https://img.icons8.com/ios-filled/20/ffffff/marker.png" width="14" height="14"></td>
-                              <td class="text-white">Office no. 16, Digital Plaza, Mumbai - 400001</td>
-                            </tr>
-                            <tr>
-                              <td width="24"><img src="https://img.icons8.com/ios-filled/20/ffffff/internet.png" width="14" height="14"></td>
-                              <td><a href="https://scantappay.vercel.app/" class="link-white">https://scantappay.vercel.app/</a></td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  
-                  <td class="col-spacer" width="25"></td>
-                  
-                  <!-- Invoice Info Right Side -->
-                  <td class="col-stack header-right" style="vertical-align: top; width: 40%; text-align: right;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="text-align: right;">
-                      <tr>
-                        <td class="header-box" style="text-align: right;">
-                          <div class="text-white" style="font-size: 22px; font-weight: 800; margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase;">INVOICE</div>
-                          <div class="text-white" style="font-size: 11px; line-height: 1.8;">
-                            <strong class="text-white">Invoice #:</strong> <span>INV-${orderData.id}</span><br>
-                            <strong class="text-white">Date:</strong> <span>${formatDate(orderData.date)}</span>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr><td style="height: 20px;"></td></tr>
-                      <tr>
-                        <td class="sent-to-box" style="text-align: left;">
-                          <div class="text-white" style="font-size: 10px; font-weight: 800; margin-bottom: 6px; opacity: 0.8; text-transform: uppercase;">
-                            <img src="https://img.icons8.com/ios-filled/20/ffffff/new-post.png" width="12" height="12" style="vertical-align: middle; margin-right: 5px;"> SENT TO:
-                          </div>
-                          <div class="text-white" style="font-size: 12px; word-break: break-all; font-weight: 600;">${orderData.customerEmail}</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Content Body -->
-          <tr>
-            <td style="padding: 35px;">
-              <!-- Details Cards Grid -->
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td class="col-stack" width="48%" style="vertical-align: top;">
-                    <table width="100%" class="details-card" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding-bottom: 18px;">
-                          <table cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="background: #3b82f6; border-radius: 8px; width: 36px; height: 36px; text-align: center;">
-                                <img src="https://img.icons8.com/ios-filled/30/ffffff/list.png" width="18" height="18" style="vertical-align: middle;">
-                              </td>
-                              <td style="padding-left: 12px; font-size: 15px; font-weight: 700; color: #1e293b;">Invoice Details</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <table width="100%" style="font-size: 11px; line-height: 2.4;">
-                            <tr><td style="color: #64748b;">Invoice #:</td><td style="text-align: right; font-weight: 700; color: #1e293b; font-family: monospace;">INV-${orderData.id.substring(0, 15)}</td></tr>
-                            <tr><td style="color: #64748b;">Order ID:</td><td style="text-align: right; font-weight: 700; color: #1e293b; font-family: monospace;">${orderData.id.substring(0, 15)}</td></tr>
-                            <tr><td style="color: #64748b;">Date & Time:</td><td style="text-align: right; font-weight: 600; color: #1e293b;">${formatDate(orderData.date)}</td></tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  
-                  <td class="col-spacer" width="4%"></td>
-                  
-                  <td class="col-stack" width="48%" style="vertical-align: top;">
-                    <table width="100%" class="payment-card" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding-bottom: 18px;">
-                          <table cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="background: #10b981; border-radius: 8px; width: 36px; height: 36px; text-align: center;">
-                                <img src="https://img.icons8.com/ios-filled/30/ffffff/bank-cards.png" width="18" height="18" style="vertical-align: middle;">
-                              </td>
-                              <td style="padding-left: 12px; font-size: 15px; font-weight: 700; color: #1e293b;">Payment Details</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <table width="100%" style="font-size: 11px; line-height: 2.4;">
-                            <tr><td style="color: #64748b;">Method:</td><td style="text-align: right; font-weight: 700; color: #1e293b;">${orderData.paymentMethod}</td></tr>
-                            <tr><td style="color: #64748b;">Transaction:</td><td style="text-align: right; font-weight: 700; color: #1e293b; font-family: monospace;">${orderData.transactionId.substring(0, 15)}</td></tr>
-                            <tr><td style="color: #64748b;">Status:</td><td style="text-align: right;"><span style="color: #059669; font-weight: 800; background: #d1fae5; padding: 4px 12px; border-radius: 20px; font-size: 9px;">✓ COMPLETED</span></td></tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Order Items Section -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 40px;">
-                <tr>
-                  <td style="padding-bottom: 22px;">
-                    <table cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="background: #3b82f6; border-radius: 10px; width: 44px; height: 44px; text-align: center;">
-                          <img src="https://img.icons8.com/ios-filled/40/ffffff/shopping-cart.png" width="22" height="22" style="vertical-align: middle;">
-                        </td>
-                        <td style="padding-left: 15px; font-size: 17px; font-weight: 700; color: #1e293b;">Order Items</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <!-- Wrapped table in container for rounded corners and removed side gaps -->
-                    <div class="items-table-container">
-                      <table width="100%" class="items-table" cellpadding="0" cellspacing="0">
-                        <thead>
-                          <tr>
-                            <th width="50%">Product Name</th>
-                            <th width="15%" style="text-align: center;">Qty</th>
-                            <th width="35%" style="text-align: right;">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          ${orderData.items
-                            .map(
-                              (item) => `
-                            <tr>
-                              <td style="font-weight: 600;">${item.name}</td>
-                              <td style="text-align: center;">
-                                <span style="background: #e2e8f0; padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 11px;">${item.quantity}</span>
-                              </td>
-                              <td style="text-align: right; font-weight: 700;">₹${(item.price * item.quantity).toFixed(2)}</td>
-                            </tr>
-                          `,
-                            )
-                            .join("")}
-                        </tbody>
-                      </table>
-                    </div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Summary Section -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 30px;">
-                <tr>
-                  <td class="mobile-hide" width="55%"></td>
-                  <td class="col-stack" width="45%">
-                    <table width="100%" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
-                      <tr>
-                        <td style="font-size: 14px; color: #64748b; padding-bottom: 8px;">Subtotal:</td>
-                        <td style="text-align: right; font-size: 14px; font-weight: 700; color: #1e293b; padding-bottom: 8px;">₹${orderData.total.toFixed(2)}</td>
-                      </tr>
-                      <tr>
-                        <td style="font-size: 14px; color: #64748b; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">Shipping:</td>
-                        <td style="text-align: right; font-size: 14px; font-weight: 700; color: #10b981; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">FREE</td>
-                      </tr>
-                      <tr>
-                        <td style="font-size: 18px; font-weight: 800; color: #1e293b; padding-top: 15px;">Total:</td>
-                        <td style="text-align: right; font-size: 20px; font-weight: 800; color: #2563eb; padding-top: 15px;">₹${orderData.total.toFixed(2)}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Footer Area -->
-          <tr>
-            <td style="padding: 0 30px 40px 30px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 15px; padding: 30px; text-align: center;">
-                    <div style="font-size: 32px; margin-bottom: 15px;">⭐</div>
-                    <div style="font-size: 20px; font-weight: 800; color: #1e40af; margin-bottom: 8px;">Thank You for your purchase!</div>
-                    <div style="font-size: 14px; color: #3b82f6; font-weight: 600;">Your order is confirmed and being prepared.</div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="text-align: center; padding-top: 30px; color: #94a3b8; font-size: 11px;">
-                    © 2025 Scan Tap Pay. All rights reserved.<br>
-                    Secure payment gateway. For support, reply to this email.
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </center>
-    </body>
-    </html>
-  `
-}
-
-import { InvoiceDisplay } from "../components/InvoiceTemplate"
+import { InvoiceDisplay, generateEmailInvoiceHTML } from "../components/InvoiceTemplate"
 
 const Invoice = () => {
   const [orderData, setOrderData] = useState(null)
@@ -343,43 +46,49 @@ const Invoice = () => {
 
   const handleDownloadPDF = () => {
     const element = document.getElementById("invoice-content")
+    if (!element) return
+
+    // Clone element to modify it for PDF without affecting UI
     const clonedElement = element.cloneNode(true)
+    clonedElement.style.margin = "0"
+    clonedElement.style.padding = "0"
+    clonedElement.style.boxShadow = "none"
+    clonedElement.style.border = "none"
+    clonedElement.style.width = "794px" // Exact A4 width at 96 DPI
 
-    // Remove the Continue Shopping button from PDF
-    const continueShoppingBtn = clonedElement.querySelector(".continue-shopping-section")
-    if (continueShoppingBtn) {
-      continueShoppingBtn.remove()
-    }
-
-    // Ensure all text is visible for PDF
-    const allElements = clonedElement.querySelectorAll("*")
-    allElements.forEach((el) => {
-      el.style.boxShadow = "none"
-      el.style.position = "static"
-      el.style.transform = "none"
-    })
+    // Create a temporary container
+    const container = document.createElement("div")
+    container.style.position = "absolute"
+    container.style.left = "-9999px"
+    container.style.top = "-9999px"
+    container.appendChild(clonedElement)
+    document.body.appendChild(container)
 
     const opt = {
-      margin: [0.5, 0.5, 0.5, 0.5],
+      margin: 0,
       filename: `invoice-${orderData.id}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
+      image: { type: "jpeg", quality: 1.0 },
       html2canvas: {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
-        letterRendering: true,
+        windowWidth: 800, // Fixed width for consistent rendering
       },
       jsPDF: {
-        unit: "in",
+        unit: "pt",
         format: "a4",
         orientation: "portrait",
-        compress: true,
       },
-      pagebreak: { mode: ["avoid-all", "css"] },
     }
 
-    html2pdf().set(opt).from(clonedElement).save()
+    html2pdf()
+      .set(opt)
+      .from(clonedElement)
+      .save()
+      .then(() => {
+        document.body.removeChild(container)
+      })
   }
 
   if (loading) {

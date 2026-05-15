@@ -9,6 +9,10 @@ import {
   faPhone,
   faMapMarkerAlt,
   faGlobe,
+  faFileInvoice,
+  faUser,
+  faCalendarAlt,
+  faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons"
 
 // Constants for consistent formatting
@@ -36,7 +40,10 @@ const formatCurrency = (amount) => {
   return `₹${Number.parseFloat(amount).toFixed(2)}`
 }
 
-export const generateInvoiceHTML = (orderData) => {
+/**
+ * Generates an HTML string optimized for email clients (Gmail, Outlook, etc.)
+ */
+export const generateEmailInvoiceHTML = (orderData) => {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -45,299 +52,146 @@ export const generateInvoiceHTML = (orderData) => {
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>Invoice - ${orderData.id}</title>
       <style>
-        * { margin: 0; padding: 0; }
-        body { 
-          margin: 0; 
-          padding: 10px; 
-          font-family: 'Segoe UI', 'Arial', sans-serif; 
-          background-color: #f3f4f6; 
-          box-sizing: border-box;
-        }
-        table { border-spacing: 0; border-collapse: collapse; }
-        td { padding: 0; }
-        .wrapper { 
-          width: 100%; 
-          table-layout: fixed; 
-          background-color: transparent; 
-          padding: 0; 
-          margin: 0;
-        }
-        .main { 
-          background-color: #ffffff; 
-          margin: 0 auto; 
-          width: 100%; 
-          max-width: 700px; 
-          border-radius: 12px; 
-          overflow: hidden; 
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
-          border: 1px solid #e2e8f0; 
-          page-break-inside: avoid;
-        }
-        
-        /* Updated header to darker blue matching email version */
-        .header-bg { 
-          background: linear-gradient(135deg, #1e3a5f 0%, #0f2847 100%); 
-          padding: 20px 25px;
-          border-bottom: 3px solid #334155;
-          page-break-inside: avoid;
-        }
-        .header-box { background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; border: none; }
-        .sent-to-box { background: rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px; border: none; }
-        
-        /* Reduced padding for cards to prevent page breaks */
-        .details-card { background: #f0f4f8; border-radius: 12px; padding: 18px; border: none; page-break-inside: avoid; }
-        .payment-card { background: #e8f5f0; border-radius: 12px; padding: 18px; border: none; page-break-inside: avoid; }
-        .summary-card { background: #f0f4f8; border-radius: 12px; border: none; page-break-inside: avoid; }
-        
-        /* Table styling */
-        .items-table-container { border-radius: 12px; overflow: hidden; border: 2px solid #cbd5e0; page-break-inside: avoid; }
-        .items-table th { 
-          background-color: #f1f5f9; 
-          padding: 12px; 
-          text-align: left; 
-          font-size: 10px; 
-          color: #475569; 
-          border-bottom: 1px solid #e2e8f0; 
-          text-transform: uppercase; 
-          letter-spacing: 0.5px; 
-        }
-        .items-table td { 
-          padding: 12px; 
-          font-size: 12px; 
-          border-bottom: 1px solid #f1f5f9; 
-          color: #1e293b; 
-        }
-        
-        /* Text colors */
-        .text-dark { color: #ffffff !important; }
-        .text-light { color: #e2e8f0 !important; }
-        .link-light { color: #e2e8f0 !important; text-decoration: none !important; }
-        
-        /* Mobile responsiveness with smaller font sizes and boxes */
-        @media screen and (max-width: 600px) {
-          body { padding: 5px; }
-          .header-bg { padding: 15px 15px; }
-          .col-stack { display: block !important; width: 100% !important; max-width: 100% !important; }
-          .col-spacer { height: 12px !important; display: block !important; width: 0 !important; }
-          .header-right { text-align: left !important; margin-top: 12px; }
-          .main { border-radius: 8px !important; }
-          .mobile-hide { display: none !important; }
-          .wrapper { padding: 0 !important; }
-          
-          /* Smaller font sizes for mobile */
-          .header-bg div:nth-child(1) { font-size: 18px !important; }
-          .tagline-text { font-size: 11px !important; }
-          .contact-text { font-size: 10px !important; }
-          .invoice-title { font-size: 14px !important; }
-          .invoice-detail { font-size: 9px !important; }
-          .order-title { font-size: 12px !important; }
-          .items-table th { font-size: 8px !important; padding: 8px !important; }
-          .items-table td { font-size: 10px !important; padding: 8px !important; }
-          .summary-font { font-size: 12px !important; }
-        }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; color: #2d3748; }
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f4f7f9; padding: 20px 0; }
+        .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 650px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f2847 100%); padding: 35px; color: #ffffff; }
+        .content { padding: 30px; }
+        .card { background-color: #f1f5f9; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .payment-card { background-color: #e8f5f0; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #edf2f7; border-radius: 8px; overflow: hidden; }
+        .items-table th { background-color: #f8fafc; padding: 12px; text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px; }
+        .items-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid #edf2f7; color: #1e293b; }
+        .total-box { background-color: #f8fafc; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .footer { padding: 30px; text-align: center; color: #94a3b8; font-size: 12px; background-color: #ffffff; }
+        .status-badge { background-color: #d1fae5; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; border: 1px solid #a7f3d0; }
       </style>
     </head>
     <body>
       <center class="wrapper">
-        <table class="main" width="100%" cellpadding="0" cellspacing="0">
-          <!-- Restructured header with better spacing -->
+        <table class="main" width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td class="header-bg">
-              <table width="100%" cellpadding="0" cellspacing="0">
+            <td class="header">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <!-- Company Left Side -->
-                  <td class="col-stack" style="vertical-align: top; width: 60%;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding-bottom: 12px;">
-                          <table cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="background: rgba(255, 255, 255, 0.15); border-radius: 8px; width: 40px; height: 40px; text-align: center; font-size: 20px; vertical-align: middle; line-height: 40px;">
-                                💳
-                              </td>
-                              <td style="padding-left: 12px;">
-                                <div style="font-size: 18px; font-weight: 800; margin: 0; color: #ffffff; letter-spacing: 0.5px;">SCAN TAP PAY</div>
-                                <div class="tagline-text" style="font-size: 11px; color: #cbd5e1; margin: 2px 0 0 0;">Smart Payment Solutions</div>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="contact-text" style="font-size: 10px; color: #cbd5e1; line-height: 1.6;">
-                          <div style="margin-bottom: 3px;"><strong>📞</strong> 7575841397 / 8511231514</div>
-                          <div style="margin-bottom: 3px;"><strong>📍</strong> Office no. 16, Digital Plaza, Mumbai - 400001</div>
-                          <div><strong>🌐</strong> https://scantappay.vercel.app/</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td class="col-spacer" width="3%"></td>
-                  <!-- Invoice Info Right -->
-                  <td class="col-stack header-right" style="vertical-align: top; width: 37%; text-align: right;">
-                    <div class="header-box" style="margin-bottom: 12px;">
-                      <div class="invoice-title" style="font-size: 14px; margin-bottom: 2px; color: #ffffff; font-weight: 800;">📄 INVOICE</div>
-                      <div class="invoice-detail" style="font-size: 9px; color: #cbd5e1; line-height: 1.6;">
-                        <div><strong>Invoice #:</strong> INV-${orderData.id}</div>
-                        <div><strong>Date:</strong> ${formatDate(orderData.date)}</div>
-                      </div>
+                  <td width="60%" style="vertical-align: top;">
+                    <div style="font-size: 26px; font-weight: 900; margin-bottom: 5px; color: #ffffff; letter-spacing: 1px;">SCAN TAP PAY</div>
+                    <div style="font-size: 12px; color: #ffffff; opacity: 0.8; margin-bottom: 15px;">Smart Payment Solutions</div>
+                    <div style="font-size: 11px; color: #ffffff; line-height: 1.8;">
+                      <span style="opacity: 0.7;">📍</span> Office no. 16, Digital Plaza, Mumbai - 400001<br>
+                      <span style="opacity: 0.7;">📞</span> 7575841397 / 8511231514<br>
+                      <span style="opacity: 0.7;">✉️</span> <a href="mailto:scantappay@gmail.com" style="color: #ffffff !important; text-decoration: none !important;">scantappay@gmail.com</a><br>
+                      <span style="opacity: 0.7;">🌐</span> <a href="https://scantappay.vercel.app/" style="color: #ffffff !important; text-decoration: none !important;">https://scantappay.vercel.app/</a>
                     </div>
-                    <div class="sent-to-box">
-                      <div style="font-size: 8px; font-weight: 800; color: #e2e8f0; margin-bottom: 4px; text-transform: uppercase;">📧 Sent To:</div>
-                      <div class="invoice-detail" style="font-size: 9px; color: #ffffff; font-weight: 600; word-break: break-all;">${orderData.customerEmail}</div>
+                  </td>
+                  <td width="40%" style="text-align: right; vertical-align: top;">
+                    <div style="font-size: 20px; font-weight: 900; margin-bottom: 12px; color: #ffffff; letter-spacing: 2px;">INVOICE</div>
+                    <div style="font-size: 11px; color: #ffffff; line-height: 1.6;">
+                      <strong style="opacity: 0.7;">Invoice #:</strong> INV-${orderData.id.substring(0, 15)}<br>
+                      <strong style="opacity: 0.7;">Date:</strong> ${new Date(orderData.date).toLocaleDateString("en-IN", { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </div>
+                    <div style="margin-top: 25px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; text-align: left; border: 1px solid rgba(255,255,255,0.1);">
+                      <div style="font-size: 9px; text-transform: uppercase; margin-bottom: 5px; color: #ffffff; opacity: 0.7; font-weight: 800;">👤 SENT TO:</div>
+                      <div style="font-size: 11px; font-weight: bold; word-break: break-all;">
+                        <a href="mailto:${orderData.customerEmail}" style="color: #ffffff !important; text-decoration: none !important;">${orderData.customerEmail}</a>
+                      </div>
                     </div>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
-
-          <!-- Content Section -->
           <tr>
-            <td style="padding: 20px;">
-              <!-- Reduced padding and margins to prevent page breaks -->
-              <!-- Invoice & Payment Details -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px; page-break-inside: avoid;">
+            <td class="content">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td width="48%" style="vertical-align: top;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background: #f0f4f8; border-radius: 12px;">
-                      <tr>
-                        <td style="padding: 18px;">
-                          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
-                            <tr>
-                              <td style="background: #3b82f6; border-radius: 8px; width: 32px; height: 32px; text-align: center; font-size: 16px; display: inline-block; vertical-align: middle; line-height: 32px;">
-                                📋
-                              </td>
-                              <td style="padding-left: 10px; font-size: 13px; font-weight: 700; color: #1e293b;">Invoice Details</td>
-                            </tr>
-                          </table>
-                          <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 10px; line-height: 1.8;">
-                            <tr><td style="color: #64748b;">Invoice #:</td><td style="text-align: right; font-weight: 700; color: #1e293b;">INV-${orderData.id}</td></tr>
-                            <tr><td style="color: #64748b;">Order ID:</td><td style="text-align: right; font-weight: 700; color: #1e293b;">${orderData.id}</td></tr>
-                            <tr><td style="color: #64748b;">Date & Time:</td><td style="text-align: right; font-weight: 700; color: #1e293b;">${formatDate(orderData.date)}</td></tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
+                    <div class="card">
+                      <div style="font-size: 14px; font-weight: 800; margin-bottom: 12px; color: #1e293b;">📋 Invoice Info</div>
+                      <table width="100%" style="font-size: 11px; line-height: 2;">
+                        <tr><td style="color: #64748b;">Invoice ID:</td><td style="text-align: right; font-weight: bold; color: #1e293b;">INV-${orderData.id.substring(0, 15)}</td></tr>
+                        <tr><td style="color: #64748b;">Order ID:</td><td style="text-align: right; font-weight: bold; color: #1e293b;">${orderData.id.substring(0, 15)}</td></tr>
+                        <tr><td style="color: #64748b;">Date:</td><td style="text-align: right; font-weight: bold; color: #1e293b;">${new Date(orderData.date).toLocaleDateString()}</td></tr>
+                      </table>
+                    </div>
                   </td>
                   <td width="4%"></td>
                   <td width="48%" style="vertical-align: top;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background: #e8f5f0; border-radius: 12px;">
-                      <tr>
-                        <td style="padding: 18px;">
-                          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
-                            <tr>
-                              <td style="background: #10b981; border-radius: 8px; width: 32px; height: 32px; text-align: center; font-size: 16px; display: inline-block; vertical-align: middle; line-height: 32px;">
-                                💳
-                              </td>
-                              <td style="padding-left: 10px; font-size: 13px; font-weight: 700; color: #1e293b;">Payment Details</td>
-                            </tr>
-                          </table>
-                          <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 10px; line-height: 1.8;">
-                            <tr><td style="color: #64748b;">Method:</td><td style="text-align: right; font-weight: 700; color: #1e293b;">${orderData.paymentMethod}</td></tr>
-                            <tr><td style="color: #64748b;">Transaction:</td><td style="text-align: right; font-weight: 700; color: #1e293b; font-family: monospace;">${orderData.transactionId.substring(0, 15)}</td></tr>
-                            <tr><td style="color: #64748b;">Status:</td><td style="text-align: right;"><span style="color: #059669; font-weight: 800; background: #d1fae5; padding: 3px 10px; border-radius: 20px; font-size: 8px;">✅ COMPLETED</span></td></tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
+                    <div class="payment-card">
+                      <div style="font-size: 14px; font-weight: 800; margin-bottom: 12px; color: #1e293b;">💳 Payment Info</div>
+                      <table width="100%" style="font-size: 11px; line-height: 2;">
+                        <tr><td style="color: #64748b;">Method:</td><td style="text-align: right; font-weight: bold; color: #1e293b;">${orderData.paymentMethod}</td></tr>
+                        <tr><td style="color: #64748b;">Transaction:</td><td style="text-align: right; font-weight: bold; color: #1e293b;">${orderData.transactionId ? orderData.transactionId.substring(0, 15) : 'N/A'}</td></tr>
+                        <tr><td style="color: #64748b;">Status:</td><td style="text-align: right;"><span class="status-badge">✓ SUCCESS</span></td></tr>
+                      </table>
+                    </div>
                   </td>
                 </tr>
               </table>
 
-              <!-- Order Items Section -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 18px; page-break-inside: avoid;">
+              <div style="font-size: 16px; font-weight: 800; margin-top: 15px; margin-bottom: 10px; color: #1e293b; border-bottom: 2px solid #3b82f6; display: inline-block; padding-bottom: 2px;">🛒 Order Items</div>
+              <table class="items-table" width="100%" cellpadding="0" cellspacing="0" border="0" style="border: 1px solid #edf2f7; border-bottom: 2px solid #edf2f7;">
+                <thead>
+                  <tr style="background-color: #f8fafc;">
+                    <th style="text-align: left; padding: 12px; font-size: 11px; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0;">Product</th>
+                    <th style="text-align: center; padding: 12px; font-size: 11px; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0;">Qty</th>
+                    <th style="text-align: right; padding: 12px; font-size: 11px; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${orderData.items
+                    .map(
+                      (item, index) => `
+                    <tr>
+                      <td style="padding: 12px; font-size: 13px; border-bottom: 1px solid #edf2f7; font-weight: 600;">${item.name}</td>
+                      <td style="padding: 12px; font-size: 13px; border-bottom: 1px solid #edf2f7; text-align: center;">${item.quantity}</td>
+                      <td style="padding: 12px; font-size: 13px; border-bottom: 1px solid #edf2f7; text-align: right; font-weight: bold;">₹${(item.price * item.quantity).toFixed(2)}</td>
+                    </tr>
+                  `,
+                    )
+                    .join("")}
+                </tbody>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="padding-bottom: 15px;">
-                    <table cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="background: #3b82f6; border-radius: 8px; width: 36px; height: 36px; text-align: center; font-size: 18px; line-height: 36px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;">
-                          🛒
-                        </td>
-                        <td style="padding-left: 12px; font-size: 14px; font-weight: 700; color: #1e293b;">Order Items</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <table width="100%" cellpadding="0" cellspacing="0" style="border-radius: 12px; overflow: hidden; border: 2px solid #cbd5e0;">
-                      <thead>
+                  <td width="40%"></td>
+                  <td width="60%">
+                    <div class="total-box">
+                      <table width="100%" style="font-size: 13px;">
                         <tr>
-                          <th width="50%" style="background-color: #f1f5f9; padding: 10px; text-align: left; font-size: 9px; color: #475569; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">Product Name</th>
-                          <th width="15%" style="background-color: #f1f5f9; padding: 10px; text-align: center; font-size: 9px; color: #475569; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">Qty</th>
-                          <th width="35%" style="background-color: #f1f5f9; padding: 10px; text-align: right; font-size: 9px; color: #475569; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">Total</th>
+                          <td style="color: #64748b; padding-bottom: 8px;">Subtotal:</td>
+                          <td style="text-align: right; font-weight: bold; color: #1e293b; padding-bottom: 8px;">₹${orderData.total.toFixed(2)}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        ${orderData.items
-                          .map(
-                            (item) => `
-                          <tr>
-                            <td style="padding: 10px; font-size: 11px; border-bottom: 1px solid #e2e8f0; color: #1e293b; font-weight: 600;">${item.name}</td>
-                            <td style="padding: 10px; font-size: 11px; border-bottom: 1px solid #e2e8f0; color: #1e293b; text-align: center;">
-                              <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 9px;">${item.quantity}</span>
-                            </td>
-                            <td style="padding: 10px; font-size: 11px; border-bottom: 1px solid #e2e8f0; color: #1e293b; text-align: right; font-weight: 700;">${formatCurrency(item.price * item.quantity)}</td>
-                          </tr>
-                        `,
-                          )
-                          .join("")}
-                      </tbody>
-                    </table>
+                        <tr>
+                          <td style="color: #64748b; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">Shipping:</td>
+                          <td style="text-align: right; font-weight: bold; color: #10b981; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">FREE</td>
+                        </tr>
+                        <tr>
+                          <td style="font-size: 16px; font-weight: 900; padding-top: 15px; color: #1e3a5f;">Total:</td>
+                          <td style="text-align: right; font-size: 18px; font-weight: 900; padding-top: 15px; color: #2563eb;">₹${orderData.total.toFixed(2)}</td>
+                        </tr>
+                      </table>
+                    </div>
                   </td>
                 </tr>
               </table>
 
-              <!-- Summary Section -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 18px; page-break-inside: avoid;">
-                <tr>
-                  <td width="55%"></td>
-                  <td width="45%">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background: #f0f4f8; border-radius: 12px;">
-                      <tr>
-                        <td style="padding: 18px;">
-                          <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="font-size: 11px; color: #64748b; padding-bottom: 8px;">Subtotal:</td>
-                              <td style="text-align: right; font-size: 11px; font-weight: 700; color: #1e293b; padding-bottom: 8px;">${formatCurrency(orderData.total)}</td>
-                            </tr>
-                            <tr>
-                              <td style="font-size: 11px; color: #64748b; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">Shipping:</td>
-                              <td style="text-align: right; font-size: 11px; font-weight: 700; color: #10b981; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">FREE</td>
-                            </tr>
-                            <tr>
-                              <td style="font-size: 13px; font-weight: 800; color: #1e293b; padding-top: 10px;">Total:</td>
-                              <td style="text-align: right; font-size: 14px; font-weight: 800; color: #2563eb; padding-top: 10px;">${formatCurrency(orderData.total)}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <div style="margin-top: 40px; padding: 30px; background-color: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px; text-align: center;">
+                <div style="font-size: 32px; margin-bottom: 10px;">⭐</div>
+                <div style="font-size: 20px; font-weight: 900; color: #1e3a5f; margin-bottom: 5px;">Thank you for your purchase!</div>
+                <div style="font-size: 13px; color: #3b82f6; font-weight: 600;">Your order has been confirmed and is being processed.</div>
+              </div>
             </td>
           </tr>
-
-          <!-- Footer Area -->
           <tr>
-            <td style="padding: 0 20px 20px 20px; page-break-inside: avoid;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px; padding: 20px; text-align: center;">
-                    <div style="font-size: 24px; margin-bottom: 10px;">⭐</div>
-                    <div style="font-size: 14px; font-weight: 800; color: #1e40af; margin-bottom: 5px;">Thank You for your purchase!</div>
-                    <div style="font-size: 11px; color: #3b82f6; font-weight: 600;">Your order is confirmed and being prepared.</div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="text-align: center; padding-top: 15px; color: #94a3b8; font-size: 9px;">
-                    © 2025 SCAN TAP PAY. All rights reserved.<br>
-                    Secure payment gateway. For support, reply to this email.
-                  </td>
-                </tr>
-              </table>
+            <td class="footer">
+              <div style="margin-bottom: 15px;">
+                <a href="https://scantappay.vercel.app/" style="color: #3b82f6; text-decoration: none; font-weight: bold;">Visit Website</a> | 
+                <a href="mailto:scantappay@gmail.com" style="color: #3b82f6; text-decoration: none; font-weight: bold;">Support</a>
+              </div>
+              <p style="margin: 0; opacity: 0.8;">© ${new Date().getFullYear()} SCAN TAP PAY. All rights reserved.</p>
+              <p style="margin: 5px 0 0 0; font-size: 11px;">This is an automated receipt for your purchase. Please do not reply directly to this email.</p>
             </td>
           </tr>
         </table>
@@ -385,110 +239,136 @@ export const InvoiceDisplay = ({ orderData }) => {
           }}
         >
           {/* Company Info Left */}
-          <div style={{ flex: "1 1 45%", minWidth: "250px", color: "white" }}>
-            <div style={{ display: "flex", alignItems: "center", marginBottom: "clamp(12px, 3%, 20px)" }}>
+          <div style={{ flex: "1 1 45%", minWidth: "min(100%, 280px)" }}>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: "clamp(15px, 4%, 25px)" }}>
               <div
                 style={{
-                  width: "clamp(40px, 8%, 50px)",
-                  height: "clamp(40px, 8%, 50px)",
-                  background: "rgba(255,255,255,0.15)",
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: "clamp(10px, 2%, 15px)",
-                  fontSize: "clamp(18px, 4%, 22px)",
+                  width: "55px",
+                  height: "55px",
+                  background: "rgba(255,255,255,0.18)",
+                  borderRadius: "50%",
+                  display: "grid",
+                  placeItems: "center",
+                  marginRight: "clamp(12px, 3%, 18px)",
+                  fontSize: "24px",
+                  boxShadow: "inset 0 0 10px rgba(255,255,255,0.1)",
+                  flexShrink: 0,
+                  lineHeight: 0,
                 }}
               >
-                <FontAwesomeIcon icon={faCreditCard} />
+                <FontAwesomeIcon icon={faFileInvoice} />
               </div>
               <div>
                 <h2
                   style={{
-                    fontSize: "clamp(1.4rem, 4%, 1.8rem)",
-                    fontWeight: "800",
-                    margin: "0 0 5px 0",
+                    fontSize: "clamp(1.2rem, 6vw, 2rem)",
+                    fontWeight: "900",
+                    margin: "0",
                     color: "white",
-                    letterSpacing: "0.5px",
+                    letterSpacing: "1px",
+                    textTransform: "uppercase",
+                    lineHeight: "1.2",
                   }}
                 >
                   {INVOICE_COMPANY_INFO.name}
                 </h2>
-                <p style={{ margin: "0", fontSize: "clamp(0.75rem, 2%, 0.95rem)", opacity: "0.9" }}>
+                <p style={{ margin: "4px 0 0 0", fontSize: "clamp(0.7rem, 3vw, 0.9rem)", opacity: "0.8" }}>
                   {INVOICE_COMPANY_INFO.tagline}
                 </p>
               </div>
             </div>
 
-            {/* Company Contact Info */}
-            <div style={{ fontSize: "clamp(0.75rem, 2%, 0.85rem)", opacity: "0.9", lineHeight: "1.6" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
-                <FontAwesomeIcon icon={faEnvelope} />
+            {/* Company Contact Info with better alignment */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "0.85rem" }}>
+                <div style={{ width: "20px", textAlign: "center", opacity: "0.7" }}>
+                  <FontAwesomeIcon icon={faEnvelope} />
+                </div>
                 <span>{INVOICE_COMPANY_INFO.email}</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
-                <FontAwesomeIcon icon={faPhone} />
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "0.85rem" }}>
+                <div style={{ width: "20px", textAlign: "center", opacity: "0.7" }}>
+                  <FontAwesomeIcon icon={faPhone} />
+                </div>
                 <span>{INVOICE_COMPANY_INFO.phones.join(" / ")}</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
-                <FontAwesomeIcon icon={faMapMarkerAlt} />
-                <span>{INVOICE_COMPANY_INFO.address}</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <FontAwesomeIcon icon={faGlobe} />
-                <a href={INVOICE_COMPANY_INFO.website} style={{ color: "white", textDecoration: "none" }}>
-                  {INVOICE_COMPANY_INFO.website}
-                </a>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "clamp(0.7rem, 3vw, 0.85rem)" }}>
+                <div style={{ width: "20px", textAlign: "center", opacity: "0.7", marginTop: "3px" }}>
+                  <FontAwesomeIcon icon={faMapMarkerAlt} />
+                </div>
+                <span style={{ maxWidth: "100%", overflowWrap: "break-word" }}>{INVOICE_COMPANY_INFO.address}</span>
               </div>
             </div>
           </div>
 
           {/* Invoice Info Right */}
-          <div style={{ flex: "1 1 45%", minWidth: "250px", textAlign: "right" }}>
+          <div style={{ flex: "1 1 45%", minWidth: "min(100%, 280px)", display: "flex", flexDirection: "column", alignItems: "stretch" }}>
             <div
               style={{
-                background: "rgba(255,255,255,0.1)",
-                borderRadius: "12px",
-                padding: "clamp(12px, 2%, 20px)",
-                marginBottom: "clamp(10px, 2%, 20px)",
+                background: "rgba(255,255,255,0.12)",
+                borderRadius: "15px",
+                padding: "20px",
+                marginBottom: "15px",
+                width: "100%",
+                maxWidth: "320px",
+                marginLeft: "auto", // Keeps it right-aligned on large screens
+                marginRight: "auto", // Center-aligned on mobile when wrapped
+                border: "1px solid rgba(255,255,255,0.1)",
               }}
             >
-              <h3
+              <div
                 style={{
-                  fontSize: "clamp(1.2rem, 3%, 1.5rem)",
-                  fontWeight: "800",
-                  margin: "0 0 8px 0",
-                  letterSpacing: "1px",
+                  fontSize: "1.6rem",
+                  fontWeight: "900",
+                  margin: "0 0 10px 0",
+                  letterSpacing: "2px",
                   textTransform: "uppercase",
+                  textAlign: "center",
+                  borderBottom: "1px solid rgba(255,255,255,0.2)",
+                  paddingBottom: "10px",
                 }}
               >
-                Invoice
-              </h3>
-              <div style={{ fontSize: "clamp(0.75rem, 1.5%, 0.85rem)", lineHeight: "1.6" }}>
-                <div>
-                  <strong>Invoice #:</strong> INV-{orderData.id}
+                INVOICE
+              </div>
+              <div style={{ fontSize: "0.85rem", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}>
+                  <span style={{ opacity: "0.8" }}>Invoice #:</span>
+                  <span style={{ fontWeight: "700", wordBreak: "break-all", textAlign: "right" }}>INV-{orderData.id.substring(0, 12)}</span>
                 </div>
-                <div>
-                  <strong>Date:</strong> {formatDate(orderData.date)}
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}>
+                  <span style={{ opacity: "0.8" }}>Date:</span>
+                  <span style={{ fontWeight: "700", textAlign: "right" }}>{formatDate(orderData.date)}</span>
                 </div>
               </div>
             </div>
 
             <div
-              style={{ background: "rgba(255,255,255,0.08)", borderRadius: "12px", padding: "clamp(10px, 2%, 15px)" }}
+              style={{ 
+                background: "rgba(255,255,255,0.08)", 
+                borderRadius: "12px", 
+                padding: "15px",
+                width: "100%",
+                maxWidth: "320px",
+                marginLeft: "auto",
+                marginRight: "auto",
+                border: "1px solid rgba(255,255,255,0.05)"
+              }}
             >
               <div
                 style={{
-                  fontSize: "clamp(0.65rem, 1.5%, 0.75rem)",
+                  fontSize: "0.7rem",
                   fontWeight: "800",
-                  marginBottom: "4px",
-                  opacity: "0.9",
+                  marginBottom: "6px",
+                  opacity: "0.7",
                   textTransform: "uppercase",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
                 }}
               >
-                📧 Sent To:
+                <FontAwesomeIcon icon={faUser} /> Bill To:
               </div>
-              <div style={{ fontSize: "clamp(0.75rem, 2%, 0.85rem)", fontWeight: "600", wordBreak: "break-all" }}>
+              <div style={{ fontSize: "clamp(0.85rem, 3.5vw, 0.95rem)", fontWeight: "700", wordBreak: "break-all" }}>
                 {orderData.customerEmail}
               </div>
             </div>
@@ -502,7 +382,7 @@ export const InvoiceDisplay = ({ orderData }) => {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
             gap: "clamp(12px, 3%, 20px)",
             marginBottom: "clamp(20px, 4%, 40px)",
           }}
@@ -513,15 +393,16 @@ export const InvoiceDisplay = ({ orderData }) => {
               <div
                 style={{
                   background: "#3b82f6",
-                  borderRadius: "8px",
-                  width: "clamp(28px, 5%, 36px)",
-                  height: "clamp(28px, 5%, 36px)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                  display: "grid",
+                  placeItems: "center",
                   marginRight: "clamp(8px, 2%, 12px)",
                   color: "white",
-                  fontSize: "clamp(14px, 3%, 18px)",
+                  fontSize: "18px",
+                  flexShrink: 0,
+                  lineHeight: 0,
                 }}
               >
                 <FontAwesomeIcon icon={faClipboardList} />
@@ -561,15 +442,16 @@ export const InvoiceDisplay = ({ orderData }) => {
               <div
                 style={{
                   background: "#10b981",
-                  borderRadius: "8px",
-                  width: "clamp(28px, 5%, 36px)",
-                  height: "clamp(28px, 5%, 36px)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                  display: "grid",
+                  placeItems: "center",
                   marginRight: "clamp(8px, 2%, 12px)",
                   color: "white",
-                  fontSize: "clamp(14px, 3%, 18px)",
+                  fontSize: "18px",
+                  flexShrink: 0,
+                  lineHeight: 0,
                 }}
               >
                 <FontAwesomeIcon icon={faCreditCard} />
@@ -594,19 +476,22 @@ export const InvoiceDisplay = ({ orderData }) => {
                 <tr>
                   <td style={{ color: "#64748b" }}>Status:</td>
                   <td style={{ textAlign: "right" }}>
-                    <span
+                    <div
                       style={{
                         color: "#059669",
-                        fontWeight: "800",
+                        fontWeight: "900",
                         background: "#d1fae5",
-                        padding: "clamp(3px, 0.5%, 4px) clamp(8px, 1%, 12px)",
+                        padding: "4px 14px",
                         borderRadius: "20px",
-                        fontSize: "clamp(0.6rem, 1%, 0.7rem)",
-                        display: "inline-block",
+                        fontSize: "0.75rem",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        border: "1px solid #a7f3d0",
                       }}
                     >
-                      ✓ COMPLETED
-                    </span>
+                      <FontAwesomeIcon icon={faCheckCircle} size="xs" /> PAID
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -620,15 +505,17 @@ export const InvoiceDisplay = ({ orderData }) => {
             <div
               style={{
                 background: "#3b82f6",
-                borderRadius: "10px",
-                width: "clamp(32px, 6%, 44px)",
-                height: "clamp(32px, 6%, 44px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                borderRadius: "50%",
+                width: "44px",
+                height: "44px",
+                display: "grid",
+                placeItems: "center",
                 marginRight: "clamp(10px, 2%, 15px)",
                 color: "white",
-                fontSize: "clamp(16px, 4%, 22px)",
+                fontSize: "20px",
+                flexShrink: 0,
+                lineHeight: 0,
+                paddingLeft: "2px", // Visual adjustment for cart icon
               }}
             >
               <FontAwesomeIcon icon={faCartShopping} size="lg" />
@@ -638,7 +525,7 @@ export const InvoiceDisplay = ({ orderData }) => {
             </h3>
           </div>
 
-          <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+          <div style={{ borderRadius: "12px", overflowX: "auto", border: "1px solid #e2e8f0", WebkitOverflowScrolling: "touch" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#f1f5f9" }}>
@@ -681,7 +568,8 @@ export const InvoiceDisplay = ({ orderData }) => {
                       textTransform: "uppercase",
                       letterSpacing: "0.5px",
                       borderBottom: "1px solid #e2e8f0",
-                      width: "35%",
+                      width: "auto",
+                      minWidth: "100px",
                     }}
                   >
                     Total
@@ -743,13 +631,14 @@ export const InvoiceDisplay = ({ orderData }) => {
         </div>
 
         {/* Summary Section */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(12px, 2%, 20px)" }}>
-          <div></div>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "clamp(12px, 2%, 20px)" }}>
           <div
             style={{
               background: "#f0f4f8",
               border: "1px solid #e2e8f0",
               borderRadius: "12px",
+              width: "100%",
+              maxWidth: "400px",
               padding: "clamp(15px, 3%, 20px)",
             }}
           >
@@ -831,7 +720,7 @@ export const InvoiceDisplay = ({ orderData }) => {
 
         <div style={{ textAlign: "center", color: "#94a3b8", fontSize: "clamp(0.65rem, 1%, 0.7rem)" }}>
           <p style={{ margin: "0" }}>
-            © 2025 {INVOICE_COMPANY_INFO.name}. All rights reserved.
+            © {new Date().getFullYear()} {INVOICE_COMPANY_INFO.name}. All rights reserved.
             <br />
             Secure payment gateway. For support, reply to this email.
           </p>

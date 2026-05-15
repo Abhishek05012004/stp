@@ -18,7 +18,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 
 // Import the invoice generation function and InvoiceDisplay component
-import { generateInvoiceHTML } from "../components/InvoiceTemplate"
+import { generateEmailInvoiceHTML } from "../components/InvoiceTemplate"
 
 const Payment = () => {
   const { items, getTotal, clearCart } = useCart()
@@ -308,8 +308,8 @@ const Payment = () => {
       await createOrderWithStockValidation(orderData)
 
       try {
-        // Generate invoice HTML using the unified function
-        const invoiceHTML = generateInvoiceHTML(orderData)
+        // Generate invoice HTML using the email-optimized function
+        const invoiceHTML = generateEmailInvoiceHTML(orderData)
 
         const emailResponse = await fetch(getFullUrl("/payment/send-invoice"), {
           method: "POST",
