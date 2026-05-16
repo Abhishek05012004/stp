@@ -1,33 +1,4 @@
-// Environment-based API URL configuration
 import { API_BASE_URL, getFullUrl } from "./apiConfig"
-
-// Auto-detect environment or allow manual override
-// const getApiBaseUrl = () => {
-//   // Check if we're running on localhost
-//   const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-
-//   // Check for manual override in localStorage (for testing)
-//   const manualOverride = localStorage.getItem("api-environment")
-
-//   if (manualOverride === "local") {
-//     console.log("🔧 Using LOCAL API (manual override):", LOCAL_API_URL)
-//     return LOCAL_API_URL
-//   } else if (manualOverride === "deployed") {
-//     console.log("🔧 Using DEPLOYED API (manual override):", DEPLOYED_API_URL)
-//     return DEPLOYED_API_URL
-//   }
-
-//   // Auto-detect based on current environment
-//   if (isLocalhost) {
-//     console.log("🏠 Auto-detected LOCAL environment, using:", LOCAL_API_URL)
-//     return LOCAL_API_URL
-//   } else {
-//     console.log("🌐 Auto-detected DEPLOYED environment, using:", DEPLOYED_API_URL)
-//     return DEPLOYED_API_URL
-//   }
-// }
-
-// const API_BASE_URL = getApiBaseUrl()
 
 // Helper functions to manually switch API environment (for testing)
 export const switchToLocalAPI = () => {

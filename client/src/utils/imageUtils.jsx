@@ -209,6 +209,7 @@ export const SmartImage = ({
       alt={alt}
       className={className}
       style={style}
+      loading="lazy"
       {...props}
     />
   );

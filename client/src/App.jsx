@@ -12,20 +12,17 @@ import Orders from "./pages/Orders.jsx"
 import AdminDashboard from "./pages/AdminDashboard.jsx"
 import NFCManager from "./pages/NFCManager.jsx"
 import AdminLogin from "./pages/AdminLogin.jsx"
+import SEO from "./components/SEO.jsx"
 import "./styles/App.css"
-import { useEffect } from "react"
 
 const ProtectedAdminDashboard = withAuth(AdminDashboard)
 
 function App() {
-  useEffect(() => {
-    document.title = "Scan Tap Pay - Smart Payment Solutions"
-  }, [])
-
   return (
     <AuthProvider>
       <CartProvider>
         <Router>
+          <SEO />
           <div className="App">
             <Routes>
               <Route path="/" element={<LandingPage />} />
