@@ -167,21 +167,6 @@ const AdminLogin = () => {
             </motion.button>
           </motion.form>
 
-          {/* Footer */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="admin-login-footer"
-          >
-            <p className="admin-login-footer-text">Secure admin access to Tip Tap Pay dashboard</p>
-            <div className="admin-login-security-badge">
-              <span className="admin-login-security-icon">
-                <FontAwesomeIcon icon={faShieldHalved} />
-              </span>
-              <span>Secured with JWT</span>
-            </div>
-          </motion.div>
         </div>
       </motion.div>
     </div>

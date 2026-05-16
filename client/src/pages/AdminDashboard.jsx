@@ -340,7 +340,7 @@ const AdminDashboard = () => {
     const totalStock = productList.reduce((sum, p) => sum + p.stock, 0)
     const lowStockProducts = productList.filter((p) => p.stock <= 10).length
     const outOfStockProducts = productList.filter((p) => p.stock === 0).length
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0)
+    const totalRevenue = orders.filter(o => o.status === "completed").reduce((sum, order) => sum + (order.total || 0), 0)
     const completedOrders = orders.filter((o) => o.status === "completed").length
 
     return {
@@ -980,19 +980,19 @@ const AdminDashboard = () => {
                   Status Filter
                 </label>
                 <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  value="completed"
+                  disabled
                   style={{
                     width: "100%",
                     padding: "0.75rem",
                     border: "2px solid #e9ecef",
                     borderRadius: "8px",
+                    background: "#f8f9fa",
+                    color: "#666",
+                    cursor: "not-allowed",
                   }}
                 >
-                  <option value="all">All Orders</option>
-                  <option value="completed">Completed</option>
-                  <option value="pending">Pending</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed Payments Only</option>
                 </select>
               </div>
 
@@ -1058,8 +1058,9 @@ const AdminDashboard = () => {
                         searchTerm === "" ||
                         order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         (order.customerName && order.customerName.toLowerCase().includes(searchTerm.toLowerCase()))
-                      const matchesStatus = categoryFilter === "all" || order.status === categoryFilter
-                      return matchesSearch && matchesStatus
+                      
+                      // Only show completed orders as requested
+                      return matchesSearch && order.status === "completed"
                     })
                     .map((order, index) => (
                       <tr

@@ -987,3 +987,24 @@ button:focus,
     border: 1px solid #000;
   }
 }
+
+/* Responsive Payment Styles */
+@media (max-width: 600px) {
+  .payment-container {
+    padding: 1rem;
+  }
+  
+  .payment-container > div {
+    padding: 1rem !important;
+  }
+  
+  .payment-container button,
+  .payment-container a {
+    width: 100% !important;
+    margin-right: 0 !important;
+  }
+  
+  .payment-summary {
+    padding: 1rem !important;
+  }
+}
