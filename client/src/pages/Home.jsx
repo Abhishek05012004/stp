@@ -27,9 +27,9 @@ import {
   faFutbol,
   faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons"
-import { useCart } from "../utils/CartContext.jsx" // Corrected import for useCart
-
-import "../styles/header.css"
+import { useCart } from "../context/CartContext.jsx" // Corrected import for useCart
+import "../styles/components/header.css"
+import "../styles/pages/home.css"
 
 const Home = () => {
   const { getItemCount, items, clearCart } = useCart()
@@ -443,7 +443,6 @@ const Home = () => {
             <div>• One-click add to cart</div>
             <div>• Real-time search functionality</div>
             <div>• Duplicate prevention system</div>
-            <div>• Modern toast notifications</div>
             <div>• Responsive design for all devices</div>
           </div>
         </div>

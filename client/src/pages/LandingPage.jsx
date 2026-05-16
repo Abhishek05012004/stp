@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { updatePageMeta, scrollToTop } from "../utils/pageUtils.js"
 import { useNavigate } from "react-router-dom"
-import "./LandingPage.css"
+import "../styles/pages/LandingPage.css"
 
 // Import Font Awesome icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"

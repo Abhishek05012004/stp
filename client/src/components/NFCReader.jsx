@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { useCart } from "../utils/CartContext.jsx"
+import { useCart } from "../context/CartContext.jsx"
 import { getProductById } from "../utils/productData.js"
 import { playBeepSound, playSuccessSound, preloadAudio } from "../utils/soundUtils.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"

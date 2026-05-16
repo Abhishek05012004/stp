@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { useAuth } from "../utils/AuthContext.jsx"
-import toast from "react-hot-toast"
+import { useAuth } from "../context/AuthContext.jsx"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLock, faUser, faEye, faEyeSlash, faRocket, faShieldHalved } from "@fortawesome/free-solid-svg-icons"
-import "./AdminLogin.css"
+import "../styles/pages/AdminLogin.css"
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -40,17 +39,14 @@ const AdminLogin = () => {
     e.preventDefault()
 
     if (!formData.username || !formData.password) {
-      toast.error("Please fill in all fields")
       return
     }
 
     const result = await login(formData)
 
     if (result.success) {
-      toast.success("Login successful! Welcome back.")
       navigate("/admin")
     } else {
-      toast.error(result.message || "Login failed")
     }
   }
 

@@ -1,8 +1,8 @@
 "use client"
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
-import { CartProvider } from "./utils/CartContext.jsx"
-import { AuthProvider, withAuth } from "./utils/AuthContext.jsx"
+import { CartProvider } from "./context/CartContext.jsx"
+import { AuthProvider, withAuth } from "./context/AuthContext.jsx"
 import LandingPage from "./pages/LandingPage.jsx"
 import Home from "./pages/Home.jsx"
 import Cart from "./pages/Cart.jsx"
@@ -12,7 +12,7 @@ import Orders from "./pages/Orders.jsx"
 import AdminDashboard from "./pages/AdminDashboard.jsx"
 import NFCManager from "./pages/NFCManager.jsx"
 import AdminLogin from "./pages/AdminLogin.jsx"
-import "./App.css"
+import "./styles/App.css"
 import { useEffect } from "react"
 
 const ProtectedAdminDashboard = withAuth(AdminDashboard)

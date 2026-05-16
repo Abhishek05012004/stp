@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import QrScanner from "qr-scanner"
-import { useCart } from "../utils/CartContext.jsx"
+import { useCart } from "../context/CartContext.jsx"
 import { getProductById } from "../utils/productData.js"
 import { playBeepSound, playSuccessSound, preloadAudio } from "../utils/soundUtils.js"
-import "../styles/scanner.css"
+import "../styles/components/scanner.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCamera, faCircleXmark, faCircleCheck, faCircleExclamation } from "@fortawesome/free-solid-svg-icons"
 

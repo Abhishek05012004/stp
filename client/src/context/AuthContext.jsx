@@ -1,8 +1,8 @@
 "use client"
 
 import { createContext, useContext, useReducer, useEffect } from "react"
-import { verifyAdminToken, clearAdminAuth, getAdminToken, getAdminData } from "./authUtils"
-import { API_BASE_URL, getFullUrl } from "./apiConfig"
+import { verifyAdminToken, clearAdminAuth, getAdminToken, getAdminData } from "../utils/authUtils"
+import { API_BASE_URL, getFullUrl } from "../utils/apiConfig"
 
 const AuthContext = createContext()
 

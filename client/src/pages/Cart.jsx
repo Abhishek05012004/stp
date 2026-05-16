@@ -1,7 +1,7 @@
 "use client"
 
 import { Link, useNavigate } from "react-router-dom"
-import { useCart } from "../utils/CartContext.jsx"
+import { useCart } from "../context/CartContext.jsx"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
   faArrowLeft,
@@ -11,7 +11,6 @@ import {
   faFloppyDisk,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons"
-import toast from "../utils/toastUtils"
 import { useState, useEffect } from "react"
 
 const Cart = () => {
@@ -31,7 +30,6 @@ const Cart = () => {
   const handleIncreaseQuantity = (item) => {
     const maxStock = typeof item.stock === "number" ? item.stock : 999
     if (item.quantity >= maxStock) {
-      toast.error(`Only ${maxStock} units of ${item.name} available in stock!`)
       // trigger custom event to blink the button
       const event = new CustomEvent("out-of-stock-blink", { detail: { id: item.id } })
       window.dispatchEvent(event)

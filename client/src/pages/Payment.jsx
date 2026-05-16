@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { useCart } from "../utils/CartContext.jsx"
+import { useCart } from "../context/CartContext.jsx"
 import { createOrderWithStockValidation, validateBulkStock } from "../utils/productData.js"
 import { getFullUrl } from "../utils/apiConfig.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"

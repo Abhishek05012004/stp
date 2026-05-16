@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { useAuth } from "../utils/AuthContext.jsx"
+import { useAuth } from "../context/AuthContext.jsx"
 import { makeAuthenticatedRequest } from "../utils/authUtils.js"
 import { getFullUrl } from "../utils/apiConfig.js"
 import { InvoiceDisplay, generateEmailInvoiceHTML } from "../components/InvoiceTemplate.jsx"
-import toast from "react-hot-toast"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
   faGears,
@@ -128,17 +127,14 @@ const AdminDashboard = () => {
           }
         }
         setSendSuccess(true)
-        toast.success(`✅ Invoice sent to ${effectiveEmail || order.customerEmail}`)
         // Auto-close after short delay showing success
         setTimeout(() => {
           setResendModal(null)
           setSendSuccess(false)
         }, 1800)
       } else {
-        toast.error("❌ Failed to send invoice: " + (data.message || data.error))
       }
     } catch (e) {
-      toast.error("❌ Error: " + e.message)
     } finally {
       setSendingInvoice(false)
     }
@@ -147,7 +143,6 @@ const AdminDashboard = () => {
   // Bulk resend invoices to all selected orders
   const handleBulkResendInvoices = async () => {
     if (selectedOrdersForResend.size === 0) {
-      toast.error("Please select at least one order")
       return
     }
     setSendingInvoice(true)
@@ -173,17 +168,14 @@ const AdminDashboard = () => {
       const data = await res.json()
       if (data.success) {
         setSendSuccess(true)
-        toast.success(`✅ ${data.message}`)
         setTimeout(() => {
           setSelectedOrdersForResend(new Set())
           setBulkResendMode(false)
           setSendSuccess(false)
         }, 1800)
       } else {
-        toast.error("❌ Some invoices failed to send")
       }
     } catch (e) {
-      toast.error("❌ Error: " + e.message)
     } finally {
       setSendingInvoice(false)
     }
@@ -226,14 +218,10 @@ const AdminDashboard = () => {
       const lowStockItems = Object.values(productsData || {}).filter((p) => p.stock <= 5)
       if (lowStockItems.length > 0) {
         lowStockItems.forEach((item) => {
-          toast.error(`⚠️ ${item.name} stock is low (${item.stock} left)`, {
-            duration: 4000,
-          })
         })
       }
     } catch (error) {
       console.error("Error fetching data:", error)
-      toast.error("Failed to fetch data. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -254,10 +242,8 @@ const AdminDashboard = () => {
         },
       }))
       setEditingProduct(null)
-      toast.success("✅ Stock updated successfully")
     } catch (error) {
       console.error("Error updating stock:", error)
-      toast.error("❌ Failed to update stock")
     }
   }
 
@@ -287,17 +273,14 @@ const AdminDashboard = () => {
           image: "",
         })
         setShowAddProduct(false)
-        toast.success("✅ Product added successfully")
       }
     } catch (error) {
       console.error("Error adding product:", error)
-      toast.error("❌ Failed to add product")
     }
   }
 
   const handleBulkStockUpdate = async () => {
     if (!bulkStockValue || selectedProducts.size === 0) {
-      toast.error("⚠️ Please select products and enter a stock value")
       return
     }
 
@@ -314,10 +297,8 @@ const AdminDashboard = () => {
       setSelectedProducts(new Set())
       setBulkStockValue("")
       setBulkUpdateMode(false)
-      toast.success("✅ Bulk stock updated successfully")
     } catch (error) {
       console.error("Error bulk updating stock:", error)
-      toast.error("❌ Failed to update stock for some products")
     }
   }
 
@@ -343,10 +324,8 @@ const AdminDashboard = () => {
     try {
       await logout()
       navigate("/admin-login")
-      toast.success("Logged out successfully")
     } catch (error) {
       console.error("Logout error:", error)
-      toast.error("Error during logout")
     }
   }
 

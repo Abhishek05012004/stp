@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useCart } from "../utils/CartContext.jsx"
+import { useCart } from "../context/CartContext.jsx"
 import { getAllProducts, getProductById, validateStockForCart } from "../utils/productData.js"
 import { playSuccessSound } from "../utils/soundUtils.js"
 import { SmartImage } from "../utils/imageUtils.jsx"
-import toast from "../utils/toastUtils.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
   faFilePen,
@@ -44,17 +43,13 @@ const ManualProductEntry = ({ onProductAdded }) => {
 
   const showToastOnce = (message, type = "success") => {
     if (recentToasts.has(message)) {
-      return // Don't show duplicate toast
     }
 
     setRecentToasts((prev) => new Set([...prev, message]))
 
     if (type === "success") {
-      toast.success(message)
     } else if (type === "error") {
-      toast.error(message)
     } else {
-      toast(message)
     }
 
     setTimeout(() => {

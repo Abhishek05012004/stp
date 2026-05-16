@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useReducer, useEffect } from "react"
-import { validateStockForCart, getProductById } from "./productData.js"
+import { validateStockForCart, getProductById } from "../utils/productData.js"
 
 const CartContext = createContext()
 
