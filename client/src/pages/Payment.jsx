@@ -31,6 +31,7 @@ const Payment = () => {
   const [customerEmail, setCustomerEmail] = useState("")
   const [emailError, setEmailError] = useState("")
   const [showEmailSuccessModal, setShowEmailSuccessModal] = useState(false)
+  const [countdown, setCountdown] = useState(3)
   const navigate = useNavigate()
   const emailInputRef = useRef(null)
 
@@ -340,9 +341,16 @@ const Payment = () => {
 
       clearCart()
 
-      setTimeout(() => {
-        navigate("/invoice")
-      }, 3000)
+      // Start countdown for redirection
+      let timer = 3
+      const interval = setInterval(() => {
+        timer -= 1
+        setCountdown(timer)
+        if (timer <= 0) {
+          clearInterval(interval)
+          navigate("/invoice")
+        }
+      }, 1000)
     } catch (error) {
       console.error("Error creating order:", error)
 
@@ -580,46 +588,8 @@ const Payment = () => {
               </div>
             )}
 
-            <div style={{ marginTop: "2rem" }}>
-              <button
-                onClick={downloadInvoice}
-                style={{
-                  padding: "1rem 2rem",
-                  background: "#28a745",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "10px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  marginRight: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <FontAwesomeIcon icon={faFileInvoice} /> Download Invoice
-              </button>
-
-              <Link
-                to="/scanner"
-                style={{
-                  padding: "1rem 2rem",
-                  background: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "10px",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                  display: "inline-block",
-                  marginBottom: "1rem",
-                }}
-              >
-                <FontAwesomeIcon icon={faCartShopping} /> Continue Shopping
-              </Link>
-            </div>
-
             <p style={{ fontSize: "14px", color: "#666", marginTop: "1rem" }}>
-              Redirecting to invoice page in 3 seconds...
+              Redirecting to invoice page in <strong>{countdown}</strong> second{countdown !== 1 ? "s" : ""}...
             </p>
           </div>
         </div>
