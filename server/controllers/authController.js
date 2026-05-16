@@ -2,7 +2,11 @@ const jwt = require("jsonwebtoken")
 const Admin = require("../models/Admin")
 
 // JWT Secret (in production, use environment variable)
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
+const JWT_SECRET = process.env.JWT_SECRET
+
+if (!JWT_SECRET) {
+  console.warn("⚠️ JWT_SECRET is not defined in environment variables. Auth will be insecure!")
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "24h"
 
 // Generate JWT Token

@@ -128,7 +128,8 @@ const Payment = () => {
 
     const totalAmount = getFinalTotalINR()
     const orderId = "ORD" + Date.now()
-    const upiIntent = `upi://pay?pa=asinghvns99-2@okicici&pn=QR Scanner Store&am=${totalAmount}&tn=Order ${orderId}&cu=INR`
+    const upiId = import.meta.env.VITE_UPI_ID || "your-upi-id@bank"
+    const upiIntent = `upi://pay?pa=${upiId}&pn=QR Scanner Store&am=${totalAmount}&tn=Order ${orderId}&cu=INR`
 
     setIsProcessing(true)
     setPaymentStatus(null)
@@ -214,7 +215,7 @@ const Payment = () => {
       }
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_RH0I6LBnmc0Ziz",
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "QR Scanner Store",
