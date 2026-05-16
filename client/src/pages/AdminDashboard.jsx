@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { useAuth } from "../utils/AuthContext.jsx"
 import { makeAuthenticatedRequest } from "../utils/authUtils.js"
 import { getFullUrl } from "../utils/apiConfig.js"
@@ -29,13 +29,15 @@ import {
   faDownload,
   faEnvelope,
   faCheckSquare,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons"
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState({})
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("overview")
+  const { tab } = useParams()
+  const [activeTab, setActiveTab] = useState(tab || "overview")
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [stockFilter, setStockFilter] = useState("all")
@@ -47,7 +49,7 @@ const AdminDashboard = () => {
     description: "",
     category: "",
     stock: "",
-    image: "/placeholder.svg?height=100&width=100",
+    image: "",
   })
   const [showAddProduct, setShowAddProduct] = useState(false)
   const [bulkUpdateMode, setBulkUpdateMode] = useState(false)
@@ -66,6 +68,12 @@ const AdminDashboard = () => {
 
   const { admin, logout, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab)
+    }
+  }, [tab, activeTab])
 
   // View invoice in modal (no navigation)
   const openInvoiceModal = (order) => {
@@ -276,7 +284,7 @@ const AdminDashboard = () => {
           description: "",
           category: "",
           stock: "",
-          image: "/placeholder.svg?height=100&width=100",
+          image: "",
         })
         setShowAddProduct(false)
         toast.success("✅ Product added successfully")
@@ -310,6 +318,24 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error("Error bulk updating stock:", error)
       toast.error("❌ Failed to update stock for some products")
+    }
+  }
+
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const response = await makeAuthenticatedRequest(`/product/${productId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        await fetchData() // Refresh data
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error)
     }
   }
 
@@ -491,25 +517,24 @@ const AdminDashboard = () => {
           { id: "overview", label: "Overview", icon: faChartSimple },
           { id: "orders", label: "Orders", icon: faClipboardList },
           { id: "inventory", label: "Inventory", icon: faBox },
-          { id: "analytics", label: "Analytics", icon: faChartLine },
           { id: "settings", label: "Settings", icon: faGear },
-        ].map((tab) => (
+        ].map((tabItem) => (
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            key={tabItem.id}
+            onClick={() => navigate(`/admin/${tabItem.id}`)}
             style={{
               padding: "1rem 1.5rem",
-              background: activeTab === tab.id ? "#007bff" : "transparent",
-              color: activeTab === tab.id ? "white" : "#666",
+              background: activeTab === tabItem.id ? "#007bff" : "transparent",
+              color: activeTab === tabItem.id ? "white" : "#666",
               border: "none",
-              borderBottom: activeTab === tab.id ? "3px solid #007bff" : "3px solid transparent",
+              borderBottom: activeTab === tabItem.id ? "3px solid #007bff" : "3px solid transparent",
               cursor: "pointer",
-              fontWeight: activeTab === tab.id ? "600" : "400",
+              fontWeight: activeTab === tabItem.id ? "600" : "400",
               whiteSpace: "nowrap",
             }}
           >
-            <FontAwesomeIcon icon={tab.icon} style={{ marginRight: "0.5rem" }} />
-            {tab.label}
+            <FontAwesomeIcon icon={tabItem.icon} style={{ marginRight: "0.5rem" }} />
+            {tabItem.label}
           </button>
         ))}
       </div>
@@ -1095,6 +1120,92 @@ const AdminDashboard = () => {
       {/* Inventory Tab */}
       {activeTab === "inventory" && (
         <div>
+          {/* Product Management Quick Actions */}
+          <div
+            style={{
+              background: "white",
+              padding: "1.5rem",
+              borderRadius: "12px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+              marginBottom: "1.5rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "1rem",
+            }}
+          >
+            <h3 style={{ margin: 0, color: "#333", fontSize: "1.25rem" }}>
+              <FontAwesomeIcon icon={faBox} style={{ marginRight: "0.5rem" }} />
+              Product Management
+            </h3>
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <button
+                onClick={() => setShowAddProduct(true)}
+                style={{
+                  padding: "0.75rem 1.25rem",
+                  background: "#28a745",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                  fontSize: "0.9rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} /> Add Product
+              </button>
+              <button
+                onClick={() => {
+                  const csvData = Object.values(products)
+                    .map((p) => `${p.id},${p.name},${p.price},${p.stock},${p.category}`)
+                    .join("\n")
+                  const blob = new Blob([`ID,Name,Price,Stock,Category\n${csvData}`], { type: "text/csv" })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement("a")
+                  a.href = url
+                  a.download = "products.csv"
+                  a.click()
+                }}
+                style={{
+                  padding: "0.75rem 1.25rem",
+                  background: "#17a2b8",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                  fontSize: "0.9rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                <FontAwesomeIcon icon={faDownload} /> Export
+              </button>
+              <button
+                onClick={fetchData}
+                style={{
+                  padding: "0.75rem 1.25rem",
+                  background: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                  fontSize: "0.9rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                <FontAwesomeIcon icon={faArrowsRotate} /> Refresh
+              </button>
+            </div>
+          </div>
           {/* Filters */}
           <div
             style={{
@@ -1536,20 +1647,37 @@ const AdminDashboard = () => {
                         {product.stock > 0 && product.stock <= 10 && " (Low Stock)"}
                       </span>
                       {!bulkUpdateMode && (
-                        <button
-                          onClick={() => setEditingProduct(product.id)}
-                          style={{
-                            padding: "0.25rem 0.5rem",
-                            background: "#007bff",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "0.8rem",
-                          }}
-                        >
-                          Edit
-                        </button>
+                        <div style={{ display: "flex", gap: "0.5rem" }}>
+                          <button
+                            onClick={() => setEditingProduct(product.id)}
+                            style={{
+                              padding: "0.25rem 0.5rem",
+                              background: "#007bff",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.id)}
+                            style={{
+                              padding: "0.25rem 0.5rem",
+                              background: "#dc3545",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "0.8rem",
+                            }}
+                            title="Delete Product"
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
@@ -1599,374 +1727,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {activeTab === "analytics" && (
-        <div>
-          {/* Analytics Header */}
-          <div
-            style={{
-              background: "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              marginBottom: "2rem",
-            }}
-          >
-            <h2 style={{ margin: "0 0 1rem 0", color: "#333" }}>📈 Analytics & Insights</h2>
-            <p style={{ margin: 0, color: "#666" }}>Comprehensive overview of your business performance</p>
-          </div>
-
-          {/* Key Metrics Grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "1.5rem",
-              marginBottom: "2rem",
-            }}
-          >
-            {/* Revenue Analytics */}
-            <div
-              style={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                padding: "2rem",
-                borderRadius: "12px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
-                <FontAwesomeIcon icon={faMoneyBillWave} />
-              </div>
-              <div
-                style={{
-                  fontSize: "2.5rem",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                ₹{analytics.totalRevenue.toFixed(2)}
-              </div>
-              <div style={{ fontSize: "1.1rem", opacity: 0.9 }}>Total Revenue</div>
-              <div
-                style={{
-                  fontSize: "0.9rem",
-                  opacity: 0.7,
-                  marginTop: "0.5rem",
-                }}
-              >
-                +12.5% from last month
-              </div>
-            </div>
-
-            {/* Sales Analytics */}
-            <div
-              style={{
-                background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                color: "white",
-                padding: "2rem",
-                borderRadius: "12px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
-                <FontAwesomeIcon icon={faChartSimple} />
-              </div>
-              <div
-                style={{
-                  fontSize: "2.5rem",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {analytics.completedOrders}
-              </div>
-              <div style={{ fontSize: "1.1rem", opacity: 0.9 }}>Total Sales</div>
-              <div
-                style={{
-                  fontSize: "0.9rem",
-                  opacity: 0.7,
-                  marginTop: "0.5rem",
-                }}
-              >
-                {analytics.totalOrders} total orders
-              </div>
-            </div>
-
-            {/* Inventory Health */}
-            <div
-              style={{
-                background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                color: "white",
-                padding: "2rem",
-                borderRadius: "12px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
-                <FontAwesomeIcon icon={faBox} />
-              </div>
-              <div
-                style={{
-                  fontSize: "2.5rem",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {analytics.totalStock}
-              </div>
-              <div style={{ fontSize: "1.1rem", opacity: 0.9 }}>Total Inventory</div>
-              <div
-                style={{
-                  fontSize: "0.9rem",
-                  opacity: 0.7,
-                  marginTop: "0.5rem",
-                }}
-              >
-                {analytics.totalProducts} products
-              </div>
-            </div>
-
-            {/* Low Stock Alert */}
-            <div
-              style={{
-                background:
-                  analytics.lowStockProducts > 0
-                    ? "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
-                    : "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-                color: "white",
-                padding: "2rem",
-                borderRadius: "12px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
-                {analytics.lowStockProducts > 0 ? "⚠️" : "✅"}
-              </div>
-              <div
-                style={{
-                  fontSize: "2.5rem",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {analytics.lowStockProducts}
-              </div>
-              <div style={{ fontSize: "1.1rem", opacity: 0.9 }}>Low Stock Items</div>
-              <div
-                style={{
-                  fontSize: "0.9rem",
-                  opacity: 0.7,
-                  marginTop: "0.5rem",
-                }}
-              >
-                {analytics.outOfStockProducts} out of stock
-              </div>
-            </div>
-          </div>
-
-          {/* Charts Section */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr",
-              gap: "2rem",
-              marginBottom: "2rem",
-            }}
-          >
-            {/* Sales Chart */}
-            <div
-              style={{
-                background: "white",
-                padding: "2rem",
-                borderRadius: "12px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              }}
-            >
-              <h3 style={{ margin: "0 0 1.5rem 0", color: "#333" }}>📈 Sales Trend</h3>
-              <div
-                style={{
-                  height: "300px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "#f8f9fa",
-                  borderRadius: "8px",
-                  border: "2px dashed #dee2e6",
-                }}
-              >
-                <div style={{ textAlign: "center", color: "#666" }}>
-                  <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📊</div>
-                  <p style={{ margin: 0 }}>Sales chart visualization</p>
-                  <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.9rem" }}>Integration with Chart.js recommended</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Top Products */}
-            <div
-              style={{
-                background: "white",
-                padding: "2rem",
-                borderRadius: "12px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              }}
-            >
-              <h3 style={{ margin: "0 0 1.5rem 0", color: "#333" }}>🏆 Top Products</h3>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                }}
-              >
-                {Object.values(products)
-                  .sort((a, b) => (b.stock || 0) - (a.stock || 0))
-                  .slice(0, 5)
-                  .map((product, index) => (
-                    <div
-                      key={product.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "1rem",
-                        padding: "1rem",
-                        background: "#f8f9fa",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          borderRadius: "50%",
-                          background:
-                            index === 0 ? "#ffd700" : index === 1 ? "#c0c0c0" : index === 2 ? "#cd7f32" : "#e9ecef",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: "bold",
-                          color: index < 3 ? "white" : "#666",
-                        }}
-                      >
-                        {index + 1}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: "600", fontSize: "0.9rem" }}>{product.name}</div>
-                        <div style={{ fontSize: "0.8rem", color: "#666" }}>
-                          {product.stock} units • ₹{product.price}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Stock Analysis */}
-          <div
-            style={{
-              background: "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            }}
-          >
-            <h3 style={{ margin: "0 0 1.5rem 0", color: "#333" }}>📊 Stock Analysis</h3>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "1rem",
-              }}
-            >
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "1.5rem",
-                  background: "#e8f5e8",
-                  borderRadius: "8px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "2rem",
-                    color: "#28a745",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  ✅
-                </div>
-                <div
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                    color: "#28a745",
-                  }}
-                >
-                  {Object.values(products).filter((p) => p.stock > 10).length}
-                </div>
-                <div style={{ color: "#666" }}>Well Stocked</div>
-              </div>
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "1.5rem",
-                  background: "#fff3cd",
-                  borderRadius: "8px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "2rem",
-                    color: "#ffc107",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  ⚠️
-                </div>
-                <div
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                    color: "#856404",
-                  }}
-                >
-                  {analytics.lowStockProducts}
-                </div>
-                <div style={{ color: "#666" }}>Low Stock</div>
-              </div>
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "1.5rem",
-                  background: "#f8d7da",
-                  borderRadius: "8px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "2rem",
-                    color: "#dc3545",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  🚫
-                </div>
-                <div
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                    color: "#721c24",
-                  }}
-                >
-                  {analytics.outOfStockProducts}
-                </div>
-                <div style={{ color: "#666" }}>Out of Stock</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {activeTab === "settings" && (
         <div>
@@ -1987,106 +1747,10 @@ const AdminDashboard = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "1fr",
               gap: "2rem",
             }}
           >
-            {/* Admin Profile */}
-            <div
-              style={{
-                background: "white",
-                padding: "2rem",
-                borderRadius: "12px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              }}
-            >
-              <h3 style={{ margin: "0 0 1.5rem 0", color: "#333" }}>👤 Admin Profile</h3>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                }}
-              >
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "0.5rem",
-                      fontWeight: "600",
-                    }}
-                  >
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    value={admin?.username || "admin"}
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "2px solid #e9ecef",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </div>
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "0.5rem",
-                      fontWeight: "600",
-                    }}
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={admin?.email || "admin@tiptappay.com"}
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "2px solid #e9ecef",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </div>
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "0.5rem",
-                      fontWeight: "600",
-                    }}
-                  >
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="Leave blank to keep current password"
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "2px solid #e9ecef",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </div>
-                <button
-                  style={{
-                    padding: "0.75rem 1.5rem",
-                    background: "#007bff",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    fontWeight: "600",
-                    marginTop: "1rem",
-                  }}
-                >
-                  💾 Update Profile
-                </button>
-              </div>
-            </div>
 
             {/* System Preferences */}
             <div
@@ -2150,113 +1814,10 @@ const AdminDashboard = () => {
                     <option value="EUR">€ Euro (EUR)</option>
                   </select>
                 </div>
-                <div>
-                  <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input type="checkbox" defaultChecked />
-                    <span style={{ fontWeight: "600" }}>Email Notifications</span>
-                  </label>
-                  <small style={{ color: "#666", marginLeft: "1.5rem" }}>
-                    Receive alerts for low stock and new orders
-                  </small>
-                </div>
-                <div>
-                  <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input type="checkbox" defaultChecked />
-                    <span style={{ fontWeight: "600" }}>Auto-backup Data</span>
-                  </label>
-                  <small style={{ color: "#666", marginLeft: "1.5rem" }}>Automatically backup data daily</small>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Product Management */}
-          <div
-            style={{
-              background: "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              marginTop: "2rem",
-            }}
-          >
-            <h3 style={{ margin: "0 0 1.5rem 0", color: "#333" }}>📦 Product Management</h3>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "1rem",
-              }}
-            >
-              <button
-                onClick={() => setShowAddProduct(true)}
-                style={{
-                  padding: "1rem",
-                  background: "#28a745",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                }}
-              >
-                ➕ Add New Product
-              </button>
-
-              <button
-                onClick={() => {
-                  const csvData = Object.values(products)
-                    .map((p) => `${p.id},${p.name},${p.price},${p.stock},${p.category}`)
-                    .join("\n")
-                  const blob = new Blob([`ID,Name,Price,Stock,Category\n${csvData}`], { type: "text/csv" })
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement("a")
-                  a.href = url
-                  a.download = "products.csv"
-                  a.click()
-                }}
-                style={{
-                  padding: "1rem",
-                  background: "#17a2b8",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                }}
-              >
-                📊 Export Products
-              </button>
-              <button
-                onClick={fetchData}
-                style={{
-                  padding: "1rem",
-                  background: "#6c757d",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                }}
-              >
-                🔄 Refresh Data
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
@@ -2445,6 +2006,35 @@ const AdminDashboard = () => {
                     ))}
                     <option value="Other">Other</option>
                   </select>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "0.5rem",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Product Image URL
+                  </label>
+                  <input
+                    type="text"
+                    value={newProduct.image}
+                    onChange={(e) =>
+                      setNewProduct((prev) => ({
+                        ...prev,
+                        image: e.target.value,
+                      }))
+                    }
+                    placeholder="https://example.com/image.jpg"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "2px solid #e9ecef",
+                      borderRadius: "8px",
+                    }}
+                  />
                 </div>
 
                 <div>

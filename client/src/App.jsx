@@ -36,7 +36,7 @@ function App() {
               <Route path="/payment" element={<Payment />} />
               <Route path="/invoice" element={<Invoice />} />
               <Route path="/orders" element={<Orders />} />
-              <Route path="/admin" element={<ProtectedAdminDashboard />} />
+              <Route path="/admin/:tab?" element={<ProtectedAdminDashboard />} />
               <Route path="/nfc-manager" element={<NFCManager />} />
               <Route path="/admin-login" element={<AdminLogin />} />
             </Routes>

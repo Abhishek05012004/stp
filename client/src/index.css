@@ -155,7 +155,7 @@ body {
 }
 
 .nav-btn.active-tab {
-  outline: 3px solid var(--text-primary);
+  outline: 3px solid #94a3b8;
   outline-offset: 2px;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
