@@ -66,4 +66,10 @@ const orderSchema = new mongoose.Schema(
   },
 )
 
+// Add indexes for performance
+orderSchema.index({ customerEmail: 1 })
+orderSchema.index({ status: 1 })
+orderSchema.index({ createdAt: -1 })
+orderSchema.index({ orderId: 1 }) // Already unique, but explicit index doesn't hurt
+
 module.exports = mongoose.model("Order", orderSchema)

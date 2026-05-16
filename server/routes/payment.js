@@ -6,15 +6,15 @@ const router = express.Router()
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_RH0I6LBnmc0Ziz",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "7ReMSO0JONPPyRe0WkuylqTl",
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 })
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER || "your-email@gmail.com",
-    pass: process.env.EMAIL_PASS || "your-app-password",
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 })
 
@@ -63,7 +63,7 @@ router.post("/verify", async (req, res) => {
     // Create signature for verification
     const body = razorpay_order_id + "|" + razorpay_payment_id
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "7ReMSO0JONPPyRe0WkuylqTl")
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(body.toString())
       .digest("hex")
 

@@ -118,60 +118,28 @@ const createOrderWithStockValidation = async (req, res) => {
   try {
     const orderData = req.body
 
-    // Step 1: Validate stock availability for all items
-    const stockValidation = []
-    let allAvailable = true
-
-    for (const item of orderData.items) {
-      const product = await Product.findOne({ id: item.id })
-
-      if (!product) {
-        return res.status(404).json({
-          error: `Product ${item.id} not found`,
-        })
-      }
-
-      const isAvailable = product.stock >= item.quantity
-
-      stockValidation.push({
-        productId: item.id,
-        name: product.name,
-        requestedQuantity: item.quantity,
-        availableStock: product.stock,
-        available: isAvailable,
-      })
-
-      if (!isAvailable) {
-        allAvailable = false
-      }
-    }
-
-    // Step 2: Return stock validation errors if any
-    if (!allAvailable) {
-      const unavailableItems = stockValidation.filter((item) => !item.available)
-      return res.status(400).json({
-        error: "Insufficient stock for some items",
-        unavailableItems,
-        message: "Please reduce quantities or remove unavailable items",
-      })
-    }
-
-    // Step 3: Create order with atomic stock deduction
+    // Step 1: Create order with atomic stock deduction and validation within a single transaction
     const session = await Order.startSession()
 
     try {
       const result = await session.withTransaction(async () => {
+        const stockValidation = []
+        
         // Deduct stock for all items atomically
         for (const item of orderData.items) {
           const product = await Product.findOne({ id: item.id }).session(session)
 
-          // Double-check stock (race condition protection)
+          if (!product) {
+            throw new Error(`Product ${item.id} not found`)
+          }
+
           if (product.stock < item.quantity) {
-            throw new Error(`Stock changed for ${product.name}. Please try again.`)
+            throw new Error(`Insufficient stock for ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`)
           }
 
           await Product.findOneAndUpdate({ id: item.id }, { $inc: { stock: -item.quantity } }, { session })
         }
+
 
         // Create the order
         const order = new Order({

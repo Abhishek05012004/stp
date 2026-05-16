@@ -1,6 +1,9 @@
 const express = require("express")
 const cors = require("cors")
 const path = require("path")
+const helmet = require("helmet")
+const compression = require("compression")
+const rateLimit = require("express-rate-limit")
 require("dotenv").config()
 
 // Import database connection
@@ -56,6 +59,39 @@ app.use(cors(corsOptions))
 app.options("*", cors(corsOptions))
 
 // Middleware
+// Security Headers
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+)
+
+// Response Compression
+app.use(compression())
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+})
+
+app.use("/api/", limiter)
+
+// Stricter limiter for auth routes
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // limit each IP to 10 login attempts per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many login attempts, please try again after an hour." },
+})
+
+app.use("/api/auth/login", authLimiter)
+
 app.use(express.json())
 
 // Root route - IMPORTANT for Vercel
@@ -141,7 +177,7 @@ app.get("/api/health", (req, res) => {
 })
 
 // Test database connection endpoint
-app.get("/api/db-status", async (req, res) => {
+app.get("/api/db-status", authenticateAdmin, async (req, res) => {
   const mongoose = require("mongoose")
   res.json({
     database: "MongoDB",
