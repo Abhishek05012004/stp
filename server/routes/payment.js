@@ -132,9 +132,7 @@ router.post("/send-invoice", async (req, res) => {
       `,
     }
 
-    console.log(`[v0] Attempting to send invoice email to: ${email}`)
     await transporter.sendMail(mailOptions)
-    console.log(`[v0] Invoice email sent successfully to: ${email}`)
 
     res.json({
       success: true,
@@ -190,7 +188,6 @@ router.post("/resend-invoice", async (req, res) => {
         }
 
         await transporter.sendMail(mailOptions)
-        console.log(`[resend] Invoice sent to: ${recipientEmail} for order: ${orderData.id}`)
         results.push({ orderId: orderData.id, email: recipientEmail, success: true })
       } catch (mailErr) {
         console.error(`[resend] Failed for order ${orderData.id}:`, mailErr.message)

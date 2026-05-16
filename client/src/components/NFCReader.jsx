@@ -41,17 +41,14 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
   const checkNFCSupport = () => {
     if ("NDEFReader" in window) {
       setIsNFCSupported(true)
-      console.log("✅ Web NFC API is supported")
     } else {
       setIsNFCSupported(false)
-      console.log("❌ Web NFC API is not supported")
     }
   }
 
   const requestNFCPermission = async () => {
     try {
       const permission = await navigator.permissions.query({ name: "nfc" })
-      console.log("📱 NFC permission status:", permission.state)
 
       if (permission.state === "granted") {
         setPermissionGranted(true)
@@ -60,11 +57,9 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
         return true
       } else {
         setPermissionGranted(false)
-        console.log("NFC permission denied. Please enable NFC permissions.")
         return false
       }
     } catch (error) {
-      console.log("⚠️ Could not check NFC permissions:", error)
       return true
     }
   }
@@ -76,13 +71,10 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
       setIsReading(true)
       setNfcStatus("reading")
 
-      console.log("Requesting NFC permissions...")
-
       const hasPermission = await requestNFCPermission()
       if (!hasPermission) {
         setIsReading(false)
         setNfcStatus("error")
-        console.log("NFC permission denied")
         return
       }
 
@@ -92,27 +84,24 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
       await ndefReaderRef.current.scan({
         signal: abortControllerRef.current.signal,
       })
-      console.log("📱 NFC Reader started successfully")
 
       ndefReaderRef.current.addEventListener("reading", handleNFCReading)
       ndefReaderRef.current.addEventListener("readingerror", handleNFCError)
 
       setPermissionGranted(true)
-      console.log("🎯 NFC Reader Active - Tap an NFC tag")
     } catch (error) {
       console.error("❌ Error starting NFC reader:", error)
       setIsReading(false)
       setNfcStatus("error")
 
       if (error.name === "NotAllowedError") {
-        console.log("❌ NFC access denied. Please allow NFC permissions.")
+        // NotAllowedError handled
       } else if (error.name === "NotSupportedError") {
-        console.log("❌ NFC is not supported on this device.")
         setIsNFCSupported(false)
       } else if (error.name === "NotReadableError") {
-        console.log("❌ NFC is disabled. Please enable NFC in device settings.")
+        // NotReadableError handled
       } else {
-        console.log(`❌ NFC Error: ${error.message || "Unknown error occurred"}`)
+        // Generic error
       }
     }
   }
@@ -132,25 +121,21 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
 
       setIsReading(false)
       setNfcStatus("idle")
-      console.log("📱 NFC Reader stopped")
     } catch (error) {
       console.error("Error stopping NFC reader:", error)
     }
   }
 
   const handleNFCReading = (event) => {
-    console.log("📱 NFC tag detected:", event.serialNumber)
     handleNFCRead(event.message, event.serialNumber)
   }
 
   const handleNFCError = (error) => {
     console.error("❌ NFC reading error:", error)
 
-    // If the status is already "info" or we're showing a specific message, don't override with generic error
     if (nfcStatus === "info" || nfcStatus === "success") return
 
     setNfcStatus("error")
-    console.log("❌ Error reading NFC tag. Please try again.")
 
     setTimeout(() => {
       if (isReading) {
@@ -161,14 +146,9 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
 
   const handleNFCRead = async (message, serialNumber) => {
     try {
-      console.log("📱 Processing NFC tag:", serialNumber)
-      console.log("📄 NFC message records:", message.records.length)
-
       let productId = null
 
       for (const record of message.records) {
-        console.log("📋 Record type:", record.recordType)
-        console.log("📋 Record data:", record.data)
 
         if (record.recordType === "text") {
           try {
@@ -187,20 +167,18 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
               }
             }
 
-            console.log("📄 Decoded NFC text:", text)
+
 
             const cleanText = text.trim().toUpperCase()
             const productMatch = cleanText.match(/^(FOOD|ELEC|CLTH|BOOK|HOME|SPRT)\d{3}$/i)
             if (productMatch) {
               productId = cleanText
-              console.log("✅ Found product ID in text:", productId)
               break
             }
 
             const extractMatch = cleanText.match(/(FOOD|ELEC|CLTH|BOOK|HOME|SPRT)\d{3}/i)
             if (extractMatch) {
               productId = extractMatch[0].toUpperCase()
-              console.log("✅ Extracted product ID from text:", productId)
               break
             }
           } catch (decodeError) {
@@ -208,11 +186,9 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
 
             try {
               const rawText = String.fromCharCode(...new Uint8Array(record.data))
-              console.log("📄 Raw text fallback:", rawText)
               const fallbackMatch = rawText.match(/(FOOD|ELEC|CLTH|BOOK|HOME|SPRT)\d{3}/i)
               if (fallbackMatch) {
                 productId = fallbackMatch[0].toUpperCase()
-                console.log("✅ Found product ID in raw text:", productId)
                 break
               }
             } catch (rawError) {
@@ -222,14 +198,12 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
         } else if (record.recordType === "url") {
           try {
             const url = new TextDecoder().decode(record.data)
-            console.log("🔗 NFC URL content:", url)
 
             const urlMatch = url.match(/\/product\/([A-Z0-9]+)$/i)
             if (urlMatch) {
               const extractedId = urlMatch[1].toUpperCase()
               if (extractedId.match(/^(FOOD|ELEC|CLTH|BOOK|HOME|SPRT)\d{3}$/)) {
                 productId = extractedId
-                console.log("✅ Found product ID in URL:", productId)
                 break
               }
             }
@@ -240,9 +214,7 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
       }
 
       if (!productId) {
-        console.log("❌ No valid product ID found in NFC tag")
         setNfcStatus("error")
-        console.log("❌ Invalid NFC tag - No product information found")
 
         setTimeout(() => {
           if (isReading) {
@@ -253,26 +225,18 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
       }
 
       if (productId === lastRead) {
-        console.log("⚠️ Duplicate NFC read ignored:", productId)
         return
       }
 
       setLastRead(productId)
       setNfcStatus("reading")
       playBeepSound()
-
-      console.log(`🔍 Processing ${productId}...`)
-
-      console.log("🔍 Looking up product:", productId)
       const product = await getProductById(productId)
 
       if (product) {
-        console.log("✅ Product found:", product.name)
-
         if (isItemInCart(product.id)) {
           setTimeout(() => {
             setNfcStatus("info")
-            console.log(`[v0] Duplicate product detected: ${product.name}`)
 
             setTimeout(() => {
               if (isReading) {
@@ -286,7 +250,6 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
             setNfcStatus("success")
             playSuccessSound()
             addItemOnce(product)
-            console.log(`✅ Added ${product.name} to cart via NFC!`)
 
             if (onProductAdded) {
               onProductAdded(product)
@@ -301,10 +264,8 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
           }, 500)
         }
       } else {
-        console.log("❌ Product not found:", productId)
         setTimeout(() => {
           setNfcStatus("error")
-          console.log(`❌ Product ${productId} not found in database`)
 
           setTimeout(() => {
             if (isReading) {
@@ -321,7 +282,6 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
     } catch (error) {
       console.error("❌ Error processing NFC tag:", error)
       setNfcStatus("error")
-      console.log("❌ Error processing NFC tag. Please try again.")
 
       setTimeout(() => {
         if (isReading) {

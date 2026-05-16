@@ -21,7 +21,6 @@ const createBeepSound = (frequency = 800, duration = 0.3, volume = 0.3) => {
 
     return true
   } catch (error) {
-    console.log("Web Audio API not supported:", error)
     return false
   }
 }
@@ -52,42 +51,25 @@ const createSuccessSound = () => {
 
     return true
   } catch (error) {
-    console.log("Web Audio API not supported:", error)
     return false
   }
 }
 
 export const playBeepSound = () => {
   try {
-    console.log("🔊 Playing beep sound...")
-
     // Try to create beep sound using Web Audio API
-    const audioCreated = createBeepSound(800, 0.5, 0.3)
-
-    if (audioCreated) {
-      console.log("✅ Beep sound played successfully using Web Audio API")
-    } else {
-      console.log("⚠️ Web Audio API not available, using silent fallback")
-    }
+    createBeepSound(800, 0.5, 0.3)
   } catch (error) {
-    console.log("❌ Error playing beep sound:", error)
+    // Silent fail
   }
 }
 
 export const playSuccessSound = () => {
   try {
-    console.log("🎉 Playing success sound...")
-
     // Try to create success sound using Web Audio API
-    const audioCreated = createSuccessSound()
-
-    if (audioCreated) {
-      console.log("✅ Success sound played successfully using Web Audio API")
-    } else {
-      console.log("⚠️ Web Audio API not available, using silent fallback")
-    }
+    createSuccessSound()
   } catch (error) {
-    console.log("❌ Error playing success sound:", error)
+    // Silent fail
   }
 }
 
@@ -97,34 +79,25 @@ export const preloadAudio = () => {
     // Test if Web Audio API is available
     const AudioContext = window.AudioContext || window.webkitAudioContext
     if (AudioContext) {
-      console.log("✅ Web Audio API available - sounds ready")
       return true
     } else {
-      console.log("⚠️ Web Audio API not available - using silent mode")
       return false
     }
   } catch (error) {
-    console.log("⚠️ Audio preload check failed:", error)
     return false
   }
 }
 
-// Test audio function
 export const testAudio = () => {
-  console.log("🧪 Testing audio capabilities...")
-
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext
     if (AudioContext) {
-      console.log("✅ Web Audio API: Supported")
       playBeepSound()
       setTimeout(() => {
         playSuccessSound()
       }, 1000)
-    } else {
-      console.log("❌ Web Audio API: Not supported")
     }
   } catch (error) {
-    console.log("❌ Audio test failed:", error)
+    // Silent fail
   }
 }

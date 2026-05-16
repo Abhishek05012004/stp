@@ -57,14 +57,11 @@ const Home = () => {
   const handleProductAdded = (product) => {
     setLastAddedProduct(product)
     setIsScannerActive(false)
-
-    console.log(`✅ ${product.name} added to cart!`)
   }
 
   const handleAddMoreProducts = () => {
     setIsScannerActive(true)
     setLastAddedProduct(null)
-    console.log("Scanner activated! Ready to scan more products.")
   }
 
   const handleClearCart = () => {
@@ -74,18 +71,15 @@ const Home = () => {
     }
     setLastAddedProduct(null)
     setIsScannerActive(true)
-    console.log("Cart cleared successfully!")
   }
 
   const toggleManualEntry = () => {
     navigate('/manual-entry')
-    console.log("Manual entry mode activated")
   }
 
   const handleScanModeChange = (newMode) => {
     if (newMode === "qr") navigate('/scanner')
     if (newMode === "nfc") navigate('/nfc-reader')
-    console.log(newMode === "qr" ? "QR Scanner activated" : "NFC Reader activated")
   }
 
   return (

@@ -7,7 +7,6 @@ import React from "react";
 export const getImagePath = (imagePath) => {
   // Handle different image path formats
   if (!imagePath) {
-    console.warn("⚠️ No image path provided, using placeholder");
     return "/placeholder.svg?height=100&width=100&text=No+Image";
   }
 
@@ -49,7 +48,6 @@ export const createImageWithFallback = (src, fallbackSrc = null) => {
     img.crossOrigin = "anonymous";
 
     img.onload = () => {
-      console.log("✅ Image loaded successfully:", src);
       resolve(src);
     };
 
@@ -57,28 +55,24 @@ export const createImageWithFallback = (src, fallbackSrc = null) => {
       console.error("❌ Failed to load image:", src);
 
       if (fallbackSrc) {
-        console.log("🔄 Trying fallback image:", fallbackSrc);
         const fallbackImg = new Image();
         fallbackImg.crossOrigin = "anonymous";
 
         fallbackImg.onload = () => {
-          console.log("✅ Fallback image loaded:", fallbackSrc);
           resolve(fallbackSrc);
         };
 
-        fallbackImg.onerror = () => {
-          console.error("❌ Fallback image also failed:", fallbackSrc);
-          const placeholder =
-            "/placeholder.svg?height=100&width=100&text=Image+Error";
-          console.log("🔄 Using placeholder:", placeholder);
-          resolve(placeholder);
-        };
+          fallbackImg.onerror = () => {
+            console.error("❌ Fallback image also failed:", fallbackSrc);
+            const placeholder =
+              "/placeholder.svg?height=100&width=100&text=Image+Error";
+            resolve(placeholder);
+          };
 
         fallbackImg.src = getImagePath(fallbackSrc);
       } else {
         const placeholder =
           "/placeholder.svg?height=100&width=100&text=Image+Error";
-        console.log("🔄 Using placeholder:", placeholder);
         resolve(placeholder);
       }
     };
@@ -90,14 +84,12 @@ export const createImageWithFallback = (src, fallbackSrc = null) => {
 export const preloadImage = async (src) => {
   try {
     const imagePath = getImagePath(src);
-    console.log("🔄 Preloading image:", imagePath);
 
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
 
       img.onload = () => {
-        console.log("✅ Image preloaded successfully:", imagePath);
         resolve(imagePath);
       };
 

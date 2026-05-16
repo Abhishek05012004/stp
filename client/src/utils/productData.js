@@ -32,19 +32,16 @@ import { API_BASE_URL, getFullUrl } from "./apiConfig"
 // Helper functions to manually switch API environment (for testing)
 export const switchToLocalAPI = () => {
   localStorage.setItem("api-environment", "local")
-  console.log("🔧 Switched to LOCAL API. Refresh page to apply changes.")
   window.location.reload()
 }
 
 export const switchToDeployedAPI = () => {
   localStorage.setItem("api-environment", "deployed")
-  console.log("🔧 Switched to DEPLOYED API. Refresh page to apply changes.")
   window.location.reload()
 }
 
 export const resetAPIEnvironment = () => {
   localStorage.removeItem("api-environment")
-  console.log("🔧 Reset to AUTO-DETECT mode. Refresh page to apply changes.")
   window.location.reload()
 }
 
@@ -54,7 +51,6 @@ export const getCurrentAPIUrl = () => API_BASE_URL
 const testConnection = async () => {
   try {
     const healthUrl = getFullUrl("/health")
-    console.log("🔄 Testing API connection to:", healthUrl)
     const response = await fetch(healthUrl, {
       method: "GET",
       headers: {
@@ -65,11 +61,8 @@ const testConnection = async () => {
     })
 
     if (response.ok) {
-      const result = await response.json()
-      console.log("✅ API Connection successful:", result)
       return true
     } else {
-      console.log("❌ API Connection failed:", response.status)
       return false
     }
   } catch (error) {
@@ -77,7 +70,7 @@ const testConnection = async () => {
 
     // If localhost fails, suggest switching to deployed
     if (API_BASE_URL.includes("localhost")) {
-      console.log("💡 Localhost API not available. You can switch to deployed API by running: switchToDeployedAPI()")
+      // Keep error log but remove suggestion
     }
     return false
   }
@@ -86,21 +79,11 @@ const testConnection = async () => {
 // Test connection immediately
 testConnection()
 
-console.log(`
-🔧 API Environment Controls:
-- Current API: ${API_BASE_URL}
-- Switch to local: switchToLocalAPI()
-- Switch to deployed: switchToDeployedAPI()  
-- Reset to auto-detect: resetAPIEnvironment()
-- Check current URL: getCurrentAPIUrl()
-`)
-
 import { getAdminToken } from "./authUtils.js"
 
 export const getProductById = async (id) => {
   try {
     const url = getFullUrl(`/product/${id}`)
-    console.log(`🔍 Fetching product from: ${url}`)
     const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
@@ -109,10 +92,8 @@ export const getProductById = async (id) => {
 
     if (response.ok) {
       const product = await response.json()
-      console.log("✅ Product found:", product)
       return product
     } else {
-      console.log("❌ Product not found:", response.status)
       return null
     }
   } catch (error) {
@@ -124,23 +105,19 @@ export const getProductById = async (id) => {
 export const getAllProducts = async () => {
   try {
     const url = getFullUrl("/products")
-    console.log(`📦 Fetching all products from: ${url}`)
     const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
       },
     })
 
-    console.log("📡 API Response status:", response.status)
-    console.log("📡 API Response headers:", Object.fromEntries(response.headers.entries()))
+    // Headers and status logging removed
 
     if (response.ok) {
       const products = await response.json()
-      console.log("✅ Products fetched successfully:", Object.keys(products).length, "products")
       return products
     } else {
       const errorText = await response.text()
-      console.log("❌ Failed to fetch products:", response.status, errorText)
 
       if (response.status === 500) {
         console.error("🔥 Server error. Check backend logs.")
@@ -152,7 +129,6 @@ export const getAllProducts = async () => {
     console.error("❌ Error fetching products:", error)
     if (error.name === "TypeError" && error.message.includes("fetch")) {
       console.error("🌐 Network error: Cannot connect to API server")
-      console.log("💡 Make sure the backend server is running on", API_BASE_URL)
     }
     return {}
   }
@@ -178,7 +154,6 @@ export const addProduct = async (product) => {
 
     if (response.ok) {
       const result = await response.json()
-      console.log("✅ Product added successfully:", result)
       return result
     } else {
       throw new Error("Failed to add product")
@@ -209,7 +184,6 @@ export const updateProductStock = async (productId, stock) => {
 
     if (response.ok) {
       const result = await response.json()
-      console.log("✅ Stock updated successfully:", result)
       return result
     } else {
       throw new Error("Failed to update stock")
@@ -223,7 +197,6 @@ export const updateProductStock = async (productId, stock) => {
 export const validateStockForCart = async (productId, quantity) => {
   try {
     const url = getFullUrl("/product/validate-stock")
-    console.log(`🔍 Validating stock for product ${productId}, quantity: ${quantity}`)
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -234,11 +207,9 @@ export const validateStockForCart = async (productId, quantity) => {
 
     if (response.ok) {
       const result = await response.json()
-      console.log("✅ Stock validation result:", result)
       return result
     } else {
       const error = await response.json()
-      console.log("❌ Stock validation failed:", error)
       return { available: false, error: error.message }
     }
   } catch (error) {
@@ -250,9 +221,6 @@ export const validateStockForCart = async (productId, quantity) => {
 export const validateBulkStock = async (items) => {
   try {
     const url = getFullUrl("/products/validate-bulk-stock")
-    console.log("🔍 Validating bulk stock for items:", items)
-    console.log("🌐 API endpoint:", url)
-
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -261,16 +229,13 @@ export const validateBulkStock = async (items) => {
       body: JSON.stringify({ items }),
     })
 
-    console.log("📡 Response status:", response.status)
-    console.log("📡 Response headers:", response.headers)
+    // Response logging removed
 
     if (response.ok) {
       const result = await response.json()
-      console.log("✅ Bulk stock validation result:", result)
       return result
     } else {
       const errorText = await response.text()
-      console.log("❌ Bulk stock validation failed:", response.status, errorText)
 
       if (response.status === 404) {
         console.error("❌ API endpoint not found. Check if backend is deployed correctly.")
@@ -312,7 +277,6 @@ export const validateBulkStock = async (items) => {
 export const createOrder = async (orderData) => {
   try {
     const url = getFullUrl("/orders")
-    console.log("💳 Creating order at:", url)
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -323,7 +287,6 @@ export const createOrder = async (orderData) => {
 
     if (response.ok) {
       const result = await response.json()
-      console.log("✅ Order created successfully:", result)
       return result
     } else {
       throw new Error("Failed to create order")
@@ -337,7 +300,6 @@ export const createOrder = async (orderData) => {
 export const createOrderWithStockValidation = async (orderData) => {
   try {
     const url = getFullUrl("/orders/with-stock-validation")
-    console.log("💳 Creating order with stock validation at:", url)
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -348,11 +310,9 @@ export const createOrderWithStockValidation = async (orderData) => {
 
     if (response.ok) {
       const result = await response.json()
-      console.log("✅ Order created with stock validation:", result)
       return result
     } else {
       const error = await response.json()
-      console.log("❌ Order creation failed:", error)
       throw new Error(error.message || "Failed to create order")
     }
   } catch (error) {
@@ -367,10 +327,8 @@ export const getOrderById = async (orderId) => {
     const response = await fetch(url)
     if (response.ok) {
       const order = await response.json()
-      console.log("✅ Order fetched successfully:", order)
       return order
     } else {
-      console.log("❌ Order not found:", response.status)
       return null
     }
   } catch (error) {
@@ -382,7 +340,6 @@ export const getOrderById = async (orderId) => {
 export const cancelOrderAndRestoreStock = async (orderId) => {
   try {
     const url = getFullUrl(`/order/${orderId}/cancel`)
-    console.log(`🔄 Cancelling order and restoring stock: ${orderId}`)
     const response = await fetch(url, {
       method: "PUT",
       headers: {
@@ -392,11 +349,9 @@ export const cancelOrderAndRestoreStock = async (orderId) => {
 
     if (response.ok) {
       const result = await response.json()
-      console.log("✅ Order cancelled and stock restored:", result)
       return result
     } else {
       const error = await response.json()
-      console.log("❌ Order cancellation failed:", error)
       throw new Error(error.message || "Failed to cancel order")
     }
   } catch (error) {
@@ -408,7 +363,6 @@ export const cancelOrderAndRestoreStock = async (orderId) => {
 export const getAllOrders = async () => {
   try {
     const url = getFullUrl("/orders")
-    console.log(`📋 Fetching all orders from: ${url}`)
     const token = getAdminToken()
     const headers = {
       "Content-Type": "application/json",
@@ -424,10 +378,8 @@ export const getAllOrders = async () => {
 
     if (response.ok) {
       const orders = await response.json()
-      console.log("✅ Orders fetched successfully:", orders.length, "orders")
       return orders
     } else {
-      console.log("❌ Failed to fetch orders:", response.status)
       return []
     }
   } catch (error) {

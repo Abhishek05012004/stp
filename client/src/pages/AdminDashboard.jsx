@@ -441,38 +441,139 @@ const AdminDashboard = () => {
         from { opacity: 0; transform: scale(0.85); }
         to { opacity: 1; transform: scale(1); }
       }
+
+      /* Responsive Container */
+      .admin-container {
+        padding: 2rem;
+        width: 100%;
+        margin: 0;
+        transition: padding 0.3s ease;
+      }
+
+      /* Responsive Header */
+      .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        gap: 1.5rem;
+      }
+
+      /* Responsive Navigation */
+      .admin-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e9ecef;
+        overflow-x: auto;
+        padding-bottom: 5px; /* Space for scrollbar */
+      }
+      .admin-tabs::-webkit-scrollbar {
+        height: 4px;
+        display: block;
+      }
+      .admin-tabs::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+      }
+
+      /* Analytics Grid */
+      .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      /* Section Card */
+      .admin-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+      }
+
+      /* Filter Grid */
+      .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      /* Responsive Table Wrapper */
+      .table-wrapper {
+        overflow-x: auto;
+        border-radius: 8px;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        background: #f8f9fa;
+      }
+
+      /* Product Grid */
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+      }
+
+      /* Responsive Media Queries */
+      @media (max-width: 1024px) {
+        .admin-container { padding: 1.5rem; }
+        .analytics-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+      }
+
+      @media (max-width: 768px) {
+        .admin-header {
+          flex-direction: column;
+          text-align: center;
+          padding: 1.5rem;
+        }
+        .header-actions {
+          width: 100%;
+          justify-content: center;
+        }
+        .admin-card { padding: 1.5rem; }
+        .analytics-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+        .analytics-card { padding: 1.5rem !important; }
+        .analytics-card svg, .analytics-card i { font-size: 1.5rem !important; }
+        .analytics-card div:nth-child(2) { font-size: 1.5rem !important; }
+      }
+
+      @media (max-width: 480px) {
+        .admin-container { padding: 0.75rem; }
+        .admin-header h1 { font-size: 1.5rem !important; }
+        .admin-header p { font-size: 0.85rem !important; }
+        .header-actions { flex-direction: column; width: 100%; }
+        .header-actions > * { width: 100%; text-align: center; justify-content: center; }
+        .admin-card { padding: 1rem; }
+        .filter-grid { grid-template-columns: 1fr; }
+        .product-grid { grid-template-columns: 1fr; }
+        .admin-tabs button { padding: 0.75rem 1rem !important; font-size: 0.85rem !important; }
+      }
     `}</style>
     <div
+      className="admin-container"
       style={{
         minHeight: "100vh",
         background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        padding: "2rem",
       }}
     >
       {/* Header */}
-      <div
-        style={{
-          background: "white",
-          padding: "2rem",
-          borderRadius: "12px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          marginBottom: "2rem",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "1rem",
-        }}
-      >
-        <div>
-          <h1 style={{ margin: "0 0 0.5rem 0", color: "#333" }}>
+      <div className="admin-header">
+        <div style={{ flex: 1, minWidth: "200px" }}>
+          <h1 style={{ margin: "0 0 0.5rem 0", color: "#333", fontSize: "1.75rem" }}>
             <FontAwesomeIcon icon={faGears} /> Admin Dashboard
           </h1>
-          <p style={{ margin: 0, color: "#666" }}>
-            Welcome back, <strong>{admin?.username || "Admin"}</strong>! Manage your inventory and orders.
+          <p style={{ margin: 0, color: "#666", fontSize: "0.95rem" }}>
+            Welcome back, <strong>{admin?.username || "Admin"}</strong>! Manage inventory and orders.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+        <div className="header-actions" style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
           <Link
             to="/"
             style={{
@@ -504,15 +605,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          marginBottom: "2rem",
-          borderBottom: "2px solid #e9ecef",
-          overflowX: "auto",
-        }}
-      >
+      <div className="admin-tabs">
         {[
           { id: "overview", label: "Overview", icon: faChartSimple },
           { id: "orders", label: "Orders", icon: faClipboardList },
@@ -543,21 +636,19 @@ const AdminDashboard = () => {
       {activeTab === "overview" && (
         <div>
           {/* Analytics Cards */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "1.5rem",
-              marginBottom: "2rem",
-            }}
-          >
+          <div className="analytics-grid">
             <div
+              className="analytics-card"
               style={{
                 background: "linear-gradient(135deg, #007bff 0%, #0056b3 100%)",
                 color: "white",
                 padding: "2rem",
                 borderRadius: "12px",
                 textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
@@ -576,12 +667,17 @@ const AdminDashboard = () => {
             </div>
 
             <div
+              className="analytics-card"
               style={{
                 background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
                 color: "white",
                 padding: "2rem",
                 borderRadius: "12px",
                 textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
@@ -600,12 +696,17 @@ const AdminDashboard = () => {
             </div>
 
             <div
+              className="analytics-card"
               style={{
                 background: "linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)",
                 color: "white",
                 padding: "2rem",
                 borderRadius: "12px",
                 textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
@@ -624,12 +725,17 @@ const AdminDashboard = () => {
             </div>
 
             <div
+              className="analytics-card"
               style={{
                 background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
                 color: "white",
                 padding: "2rem",
                 borderRadius: "12px",
                 textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
@@ -648,12 +754,17 @@ const AdminDashboard = () => {
             </div>
 
             <div
+              className="analytics-card"
               style={{
                 background: "linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%)",
                 color: "white",
                 padding: "2rem",
                 borderRadius: "12px",
                 textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
@@ -672,12 +783,17 @@ const AdminDashboard = () => {
             </div>
 
             <div
+              className="analytics-card"
               style={{
                 background: "linear-gradient(135deg, #17a2b8 0%, #138496 100%)",
                 color: "white",
                 padding: "2rem",
                 borderRadius: "12px",
                 textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>
@@ -697,16 +813,8 @@ const AdminDashboard = () => {
           </div>
 
           {/* Quick Actions */}
-          <div
-            style={{
-              background: "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              marginBottom: "2rem",
-            }}
-          >
-            <h3 style={{ marginBottom: "1.5rem" }}>Quick Actions</h3>
+          <div className="admin-card">
+            <h3 style={{ marginBottom: "1.5rem", fontSize: "1.25rem" }}>Quick Actions</h3>
             <div
               style={{
                 display: "grid",
@@ -768,15 +876,7 @@ const AdminDashboard = () => {
       {activeTab === "orders" && (
         <div>
           {/* Orders Header */}
-          <div
-            style={{
-              background: "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              marginBottom: "2rem",
-            }}
-          >
+          <div className="admin-card">
             <div
               style={{
                 display: "flex",
@@ -787,7 +887,7 @@ const AdminDashboard = () => {
                 gap: "1rem",
               }}
             >
-              <h2 style={{ margin: 0, color: "#333" }}>📋 Order Management</h2>
+              <h2 style={{ margin: 0, color: "#333", fontSize: "1.5rem" }}>📋 Order Management</h2>
               <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
                 <button
                   onClick={() => {
@@ -865,13 +965,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Order Filters */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "1rem",
-              }}
-            >
+            <div className="filter-grid">
               <div>
                 <label
                   style={{
@@ -947,15 +1041,8 @@ const AdminDashboard = () => {
           </div>
 
           {/* Orders Table */}
-          <div
-            style={{
-              background: "white",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              overflow: "hidden",
-            }}
-          >
-            <div style={{ overflowX: "auto" }}>
+          <div className="admin-card" style={{ padding: 0 }}>
+            <div className="table-wrapper">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                   <tr style={{ background: "#f8f9fa" }}>
@@ -1121,20 +1208,7 @@ const AdminDashboard = () => {
       {activeTab === "inventory" && (
         <div>
           {/* Product Management Quick Actions */}
-          <div
-            style={{
-              background: "white",
-              padding: "1.5rem",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              marginBottom: "1.5rem",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "1rem",
-            }}
-          >
+          <div className="admin-card">
             <h3 style={{ margin: 0, color: "#333", fontSize: "1.25rem" }}>
               <FontAwesomeIcon icon={faBox} style={{ marginRight: "0.5rem" }} />
               Product Management
@@ -1207,23 +1281,8 @@ const AdminDashboard = () => {
             </div>
           </div>
           {/* Filters */}
-          <div
-            style={{
-              background: "white",
-              padding: "1.5rem",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              marginBottom: "2rem",
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "1rem",
-                alignItems: "end",
-              }}
-            >
+          <div className="admin-card">
+            <div className="filter-grid">
               <div>
                 <label
                   style={{
@@ -1416,16 +1475,10 @@ const AdminDashboard = () => {
                 </div>
               </div>
             )}
-          </div>
+            </div>
 
           {/* Products Grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: "1.5rem",
-            }}
-          >
+          <div className="product-grid">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
@@ -1731,17 +1784,9 @@ const AdminDashboard = () => {
       {activeTab === "settings" && (
         <div>
           {/* Settings Header */}
-          <div
-            style={{
-              background: "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              marginBottom: "2rem",
-            }}
-          >
-            <h2 style={{ margin: "0 0 1rem 0", color: "#333" }}>⚙️ Settings & Configuration</h2>
-            <p style={{ margin: 0, color: "#666" }}>Manage your admin profile and system preferences</p>
+          <div className="admin-card">
+            <h2 style={{ margin: "0 0 1rem 0", color: "#333", fontSize: "1.5rem" }}>⚙️ Settings & Configuration</h2>
+            <p style={{ margin: 0, color: "#666", fontSize: "0.95rem" }}>Manage your admin profile and system preferences</p>
           </div>
 
           <div
@@ -1753,14 +1798,7 @@ const AdminDashboard = () => {
           >
 
             {/* System Preferences */}
-            <div
-              style={{
-                background: "white",
-                padding: "2rem",
-                borderRadius: "12px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              }}
-            >
+            <div className="admin-card">
               <h3 style={{ margin: "0 0 1.5rem 0", color: "#333" }}>🔧 System Preferences</h3>
               <div
                 style={{
@@ -1839,14 +1877,13 @@ const AdminDashboard = () => {
           }}
         >
           <div
+            className="admin-card"
             style={{
-              background: "white",
-              borderRadius: "12px",
-              padding: "2rem",
               maxWidth: "500px",
               width: "100%",
-              maxHeight: "80vh",
+              maxHeight: "85vh",
               overflow: "auto",
+              position: "relative",
             }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>Add New Product</h2>
@@ -2127,7 +2164,17 @@ const AdminDashboard = () => {
           }}
           onClick={(e) => { if (e.target === e.currentTarget) setInvoiceModal(null) }}
         >
-          <div style={{ width: "100%", maxWidth: "900px", position: "relative" }}>
+          <div
+            className="admin-card"
+            style={{
+              width: "100%",
+              maxWidth: "900px",
+              position: "relative",
+              padding: 0,
+              background: "none",
+              boxShadow: "none",
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -2202,13 +2249,10 @@ const AdminDashboard = () => {
           onClick={(e) => { if (e.target === e.currentTarget) setResendModal(null) }}
         >
           <div
+            className="admin-card"
             style={{
-              background: "white",
-              borderRadius: "16px",
-              padding: "2rem",
               width: "100%",
               maxWidth: "500px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
               position: "relative",
               overflow: "hidden",
             }}

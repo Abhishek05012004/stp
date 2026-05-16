@@ -122,10 +122,8 @@ export const AuthProvider = ({ children }) => {
               type: "VERIFY_SUCCESS",
               payload: admin,
             })
-            console.log("✅ Admin authentication verified")
           } else {
             dispatch({ type: "VERIFY_FAILURE" })
-            console.log("❌ Admin authentication verification failed")
           }
         } catch (error) {
           console.error("Auth verification error:", error)
@@ -145,7 +143,6 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const loginUrl = getFullUrl("/auth/login")
-      console.log("Attempting login to:", loginUrl)
 
       const response = await fetch(loginUrl, {
         method: "POST",
@@ -176,7 +173,6 @@ export const AuthProvider = ({ children }) => {
           },
         })
 
-        console.log("✅ Admin login successful")
         return { success: true, message: data.message }
       } else {
         dispatch({
@@ -224,7 +220,6 @@ export const AuthProvider = ({ children }) => {
       // Clear local storage and state regardless of API call result
       clearAdminAuth()
       dispatch({ type: "LOGOUT" })
-      console.log("🚪 Admin logged out")
     }
   }
 

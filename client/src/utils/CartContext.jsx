@@ -89,13 +89,11 @@ export const CartProvider = ({ children }) => {
           const parsedCart = JSON.parse(savedCart)
           if (Array.isArray(parsedCart) && parsedCart.length > 0) {
             dispatch({ type: "LOAD_CART", payload: parsedCart })
-            console.log("✅ Cart loaded from localStorage:", parsedCart.length, "items")
 
             for (const item of parsedCart) {
               try {
                 const freshProduct = await getProductById(item.id)
                 if (freshProduct && freshProduct.stock !== item.stock) {
-                  console.log(`[v0] Refreshing stock for ${item.id}: ${item.stock} -> ${freshProduct.stock}`)
                   dispatch({
                     type: "UPDATE_ITEM_STOCK",
                     payload: { id: item.id, stock: freshProduct.stock },
@@ -121,7 +119,6 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     try {
       localStorage.setItem("qr-scanner-cart", JSON.stringify(state.items))
-      console.log("💾 Cart saved to localStorage:", state.items.length, "items")
     } catch (error) {
       console.error("Error saving cart to localStorage:", error)
     }
@@ -146,7 +143,6 @@ export const CartProvider = ({ children }) => {
         try {
           const validation = await validateStockForCart(id, quantity)
           if (!validation.available) {
-            console.log(`[v0] Stock limit reached for ${id}: ${validation.availableStock}`)
             // Trigger out of stock blink event
             const event = new CustomEvent("out-of-stock-blink", { detail: { id } })
             window.dispatchEvent(event)
@@ -169,7 +165,6 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: "CLEAR_CART" })
     // Also clear from localStorage
     localStorage.removeItem("qr-scanner-cart")
-    console.log("🗑️ Cart cleared completely")
   }
 
   const getTotal = () => {

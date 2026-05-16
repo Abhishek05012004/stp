@@ -12,10 +12,7 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     })
 
-    console.log(`✅ MongoDB Connected Successfully!`)
-    console.log(`🌐 Host: ${conn.connection.host}`)
-    console.log(`📊 Database: ${conn.connection.name}`)
-    console.log(`🔗 Connection State: ${conn.connection.readyState === 1 ? "Connected" : "Disconnected"}`)
+    console.log(`✅ MongoDB Connected`)
   } catch (error) {
     console.error("❌ MongoDB connection error:", error.message)
     process.exit(1)
@@ -23,16 +20,8 @@ const connectDB = async () => {
 }
 
 // Handle connection events
-mongoose.connection.on("connected", () => {
-  console.log("🟢 Mongoose connected to MongoDB Atlas")
-})
-
 mongoose.connection.on("error", (err) => {
   console.log("🔴 Mongoose connection error:", err)
-})
-
-mongoose.connection.on("disconnected", () => {
-  console.log("🟡 Mongoose disconnected")
 })
 
 module.exports = connectDB

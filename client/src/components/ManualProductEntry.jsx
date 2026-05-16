@@ -68,17 +68,10 @@ const ManualProductEntry = ({ onProductAdded }) => {
 
   const loadAllProducts = async () => {
     try {
-      console.log("📦 Loading all products...")
-
       const products = await getAllProducts()
       setAllProducts(products)
-      console.log("✅ Loaded", Object.keys(products).length, "products")
 
       if (Object.keys(products).length === 0) {
-        console.warn("📦 No products loaded. This could be due to:")
-        console.log("1. Backend server not running")
-        console.log("2. Database connection issues")
-        console.log("3. No products in database")
         showToastOnce("No products found. Please check server connection.", "error")
       } else {
         showToastOnce(`Loaded ${Object.keys(products).length} products successfully!`)
@@ -130,7 +123,6 @@ const ManualProductEntry = ({ onProductAdded }) => {
       addItemOnce(product)
       playSuccessSound()
       showToastOnce(`✅ ${product.name} added to cart!`)
-      console.log(`✅ Added ${product.name} to cart!`)
 
       if (onProductAdded) {
         onProductAdded(product)
@@ -202,7 +194,6 @@ const ManualProductEntry = ({ onProductAdded }) => {
         <button
           onClick={() => {
             setShowProductList(!showProductList)
-            console.log(showProductList ? "Product list hidden" : "Product list shown")
           }}
           className="nav-btn info"
           style={{ fontSize: "0.875rem", padding: "0.5rem 1rem" }}
@@ -288,7 +279,6 @@ const ManualProductEntry = ({ onProductAdded }) => {
               <button
                 onClick={() => {
                   loadAllProducts()
-                  console.log("Products refreshed!")
                 }}
                 className="nav-btn secondary"
                 style={{ fontSize: "0.75rem", padding: "0.5rem 1rem" }}

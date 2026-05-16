@@ -141,7 +141,6 @@ const NFCManager = () => {
           <NFCReaderComponent
             isActive={true}
             onProductAdded={(product) => {
-              console.log("Product added via NFC test:", product)
               alert(
                 `✅ NFC Test Successful!\n\nProduct: ${product.name}\nPrice: ₹${product.price}\n\nThis would normally be added to your cart.`,
               )

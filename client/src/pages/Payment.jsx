@@ -64,7 +64,6 @@ const Payment = () => {
 
   const validateStockBeforePayment = async () => {
     try {
-      console.log("🔍 Validating stock before payment...")
       const stockItems = items.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
@@ -129,8 +128,6 @@ const Payment = () => {
     const totalAmount = getFinalTotalINR()
     const orderId = "ORD" + Date.now()
     const upiIntent = `upi://pay?pa=asinghvns99-2@okicici&pn=QR Scanner Store&am=${totalAmount}&tn=Order ${orderId}&cu=INR`
-
-    console.log("🔗 UPI Intent URL:", upiIntent)
 
     setIsProcessing(true)
     setPaymentStatus(null)
@@ -304,7 +301,6 @@ const Payment = () => {
         date: new Date().toISOString(), // Add date for invoice
       }
 
-      console.log("💳 Processing payment with inventory management...")
       await createOrderWithStockValidation(orderData)
 
       try {
@@ -324,10 +320,7 @@ const Payment = () => {
         })
 
         if (emailResponse.ok) {
-          console.log("📧 Invoice email sent successfully")
           setShowEmailSuccessModal(true)
-        } else {
-          console.log("⚠️ Failed to send invoice email, but payment was successful")
         }
       } catch (emailError) {
         console.error("Email sending error:", emailError)

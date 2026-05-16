@@ -48,7 +48,6 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
           await scannerRef.current.start()
           setIsScanning(true)
           setCameraError(false)
-          console.log("📷 QR Scanner started successfully")
         }
       } catch (error) {
         console.error("Error starting scanner:", error)
@@ -65,7 +64,6 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
         scannerRef.current.destroy()
         scannerRef.current = null
         setIsScanning(false)
-        console.log("📷 QR Scanner stopped")
       }
     }
   }, [isActive])
@@ -77,8 +75,6 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
     setScanStatus("scanning")
     playBeepSound()
 
-    console.log(`Scanning ${data}...`)
-
     try {
       const product = await getProductById(data)
 
@@ -86,7 +82,6 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
         if (isItemInCart(product.id)) {
           setTimeout(() => {
             setScanStatus("duplicate")
-            console.log(`${product.name} is already in your cart!`)
 
             setTimeout(() => {
               setScanStatus("idle")
@@ -98,7 +93,6 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
             setScanStatus("success")
             playSuccessSound()
             addItemOnce(product)
-            console.log(`✅ Added ${product.name} to cart!`)
 
             if (onProductAdded) {
               onProductAdded(product)
@@ -113,7 +107,6 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
       } else {
         setTimeout(() => {
           setScanStatus("error")
-          console.log(`Product ${data} not found`)
 
           setTimeout(() => {
             setScanStatus("idle")
@@ -125,7 +118,6 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
       console.error("Error fetching product:", error)
       setTimeout(() => {
         setScanStatus("error")
-        console.log("Error connecting to server")
 
         setTimeout(() => {
           setScanStatus("idle")

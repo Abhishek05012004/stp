@@ -58,12 +58,6 @@ app.options("*", cors(corsOptions))
 // Middleware
 app.use(express.json())
 
-// Logging middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - Origin: ${req.headers.origin || "No Origin"}`)
-  next()
-})
-
 // Root route - IMPORTANT for Vercel
 app.get("/", (req, res) => {
   res.json({
@@ -235,13 +229,6 @@ module.exports = app
 // Start server (for local development)
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`)
-    console.log(`📦 Database: MongoDB`)
-    console.log(
-      `🌍 CORS Allowed Origins:`,
-      allowedOrigins.filter((origin) => origin),
-    )
-    console.log(`🔗 API endpoints available at http://localhost:${PORT}/api/`)
-    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`)
+    console.log(`🚀 Server running on http://localhost:${PORT}`)
   })
 }
