@@ -114,6 +114,7 @@ app.put("/api/order/:id/status", authenticateAdmin, orderController.updateOrderS
 
 app.post("/api/orders/with-stock-validation", orderController.createOrderWithStockValidation)
 app.put("/api/order/:id/cancel", authenticateAdmin, orderController.cancelOrderAndRestoreStock)
+app.put("/api/order/:id/email", authenticateAdmin, orderController.updateOrderEmail)
 
 // Simple seed endpoint - runs the seed script (protected)
 app.post("/api/seed", authenticateAdmin, async (req, res) => {

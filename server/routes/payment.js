@@ -152,6 +152,64 @@ router.post("/send-invoice", async (req, res) => {
   }
 })
 
+// Resend invoice(s) to one or multiple recipients (admin use)
+router.post("/resend-invoice", async (req, res) => {
+  try {
+    // orders: array of { orderData, invoiceHTML, overrideEmail? }
+    const { orders } = req.body
+
+    if (!orders || !Array.isArray(orders) || orders.length === 0) {
+      return res.status(400).json({ error: "orders array is required" })
+    }
+
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      return res.status(500).json({
+        error: "Email service not configured",
+        message: "Please configure EMAIL_USER and EMAIL_PASS environment variables",
+      })
+    }
+
+    const results = []
+
+    for (const entry of orders) {
+      const { orderData, invoiceHTML, overrideEmail } = entry
+      const recipientEmail = overrideEmail || orderData.customerEmail
+
+      if (!recipientEmail || !orderData) {
+        results.push({ orderId: orderData?.id || "unknown", success: false, error: "Missing email or order data" })
+        continue
+      }
+
+      try {
+        const mailOptions = {
+          from: `"Scan Tap Pay" <${process.env.EMAIL_USER}>`,
+          to: recipientEmail,
+          subject: `Invoice for Order ${orderData.id} - Scan Tap Pay`,
+          html: invoiceHTML || `<p>Invoice for order ${orderData.id}</p>`,
+          text: `Thank you for your order!\n\nOrder ID: ${orderData.id}\nAmount: ₹${orderData.total}\nPayment: ${orderData.paymentMethod || "Online Payment"}\nStatus: Completed\n\nScan Tap Pay`,
+        }
+
+        await transporter.sendMail(mailOptions)
+        console.log(`[resend] Invoice sent to: ${recipientEmail} for order: ${orderData.id}`)
+        results.push({ orderId: orderData.id, email: recipientEmail, success: true })
+      } catch (mailErr) {
+        console.error(`[resend] Failed for order ${orderData.id}:`, mailErr.message)
+        results.push({ orderId: orderData.id, email: recipientEmail, success: false, error: mailErr.message })
+      }
+    }
+
+    const successCount = results.filter((r) => r.success).length
+    res.json({
+      success: successCount > 0,
+      message: `${successCount}/${orders.length} invoice(s) sent successfully`,
+      results,
+    })
+  } catch (error) {
+    console.error("Error in resend-invoice:", error)
+    res.status(500).json({ error: "Failed to resend invoices", details: error.message })
+  }
+})
+
 // Get payment details
 router.get("/payment/:paymentId", async (req, res) => {
   try {

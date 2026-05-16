@@ -1,9 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../utils/AuthContext.jsx"
 import { makeAuthenticatedRequest } from "../utils/authUtils.js"
+import { getFullUrl } from "../utils/apiConfig.js"
+import { InvoiceDisplay, generateEmailInvoiceHTML } from "../components/InvoiceTemplate.jsx"
 import toast from "react-hot-toast"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
@@ -20,6 +22,13 @@ import {
   faMoneyBillWave,
   faPlus,
   faArrowsRotate,
+  faFileInvoice,
+  faPaperPlane,
+  faEdit,
+  faXmark,
+  faDownload,
+  faEnvelope,
+  faCheckSquare,
 } from "@fortawesome/free-solid-svg-icons"
 
 const AdminDashboard = () => {
@@ -45,22 +54,131 @@ const AdminDashboard = () => {
   const [selectedProducts, setSelectedProducts] = useState(new Set())
   const [bulkStockValue, setBulkStockValue] = useState("")
 
+  // Invoice modal state
+  const [invoiceModal, setInvoiceModal] = useState(null)
+  const [resendModal, setResendModal] = useState(null)
+  const [editedInvoiceNote, setEditedInvoiceNote] = useState("")
+  const [selectedOrdersForResend, setSelectedOrdersForResend] = useState(new Set())
+  const [bulkResendMode, setBulkResendMode] = useState(false)
+  const [sendingInvoice, setSendingInvoice] = useState(false)
+  const [sendSuccess, setSendSuccess] = useState(false) // for checkmark animation
+  const invoiceRef = useRef(null)
+
   const { admin, logout, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
-  const generateInvoice = (order) => {
-    localStorage.setItem(
-      "lastOrder",
-      JSON.stringify({
+  // View invoice in modal (no navigation)
+  const openInvoiceModal = (order) => {
+    const orderData = {
+      ...order,
+      transactionId: order.transactionId || `TXN${order.id}`,
+      paymentMethod: order.paymentMethod || "Online Payment",
+      tax: order.tax || order.total * 0.18,
+      finalTotal: order.total,
+      status: order.status || "completed",
+      customerEmail: order.customerEmail || "N/A",
+    }
+    setInvoiceModal(orderData)
+  }
+
+  // Resend invoice to a single order's email (with optional edit)
+  const handleResendInvoice = async (order, overrideEmail = null, extraNote = "") => {
+    setSendingInvoice(true)
+    setSendSuccess(false)
+    try {
+      const effectiveEmail = overrideEmail && overrideEmail !== order.customerEmail ? overrideEmail : null
+      const orderData = {
         ...order,
-        transactionId: `TXN${Date.now()}`,
-        tax: order.total * 0.18,
-        finalTotal: order.total + order.total * 0.18,
+        transactionId: order.transactionId || `TXN${order.id}`,
+        paymentMethod: order.paymentMethod || "Online Payment",
+        tax: order.tax || 0,
+        finalTotal: order.total,
         status: order.status || "completed",
-      }),
-    )
-    // Navigate to invoice page
-    navigate("/invoice")
+        customerEmail: effectiveEmail || order.customerEmail,
+      }
+      const invoiceHTML = generateEmailInvoiceHTML(orderData) + (extraNote ? `<p style="margin:20px;color:#555;">${extraNote}</p>` : "")
+      const res = await fetch(getFullUrl("/payment/resend-invoice"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orders: [{ orderData, invoiceHTML, overrideEmail: effectiveEmail || undefined }] }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        // If admin provided a different email, update it in the DB and local state
+        if (effectiveEmail) {
+          try {
+            await makeAuthenticatedRequest(`/order/${order.id}/email`, {
+              method: "PUT",
+              body: JSON.stringify({ customerEmail: effectiveEmail }),
+            })
+            // Update local orders list so UI reflects immediately
+            setOrders((prev) =>
+              prev.map((o) => (o.id === order.id ? { ...o, customerEmail: effectiveEmail } : o))
+            )
+          } catch (emailErr) {
+            console.warn("Could not update email in DB:", emailErr)
+          }
+        }
+        setSendSuccess(true)
+        toast.success(`✅ Invoice sent to ${effectiveEmail || order.customerEmail}`)
+        // Auto-close after short delay showing success
+        setTimeout(() => {
+          setResendModal(null)
+          setSendSuccess(false)
+        }, 1800)
+      } else {
+        toast.error("❌ Failed to send invoice: " + (data.message || data.error))
+      }
+    } catch (e) {
+      toast.error("❌ Error: " + e.message)
+    } finally {
+      setSendingInvoice(false)
+    }
+  }
+
+  // Bulk resend invoices to all selected orders
+  const handleBulkResendInvoices = async () => {
+    if (selectedOrdersForResend.size === 0) {
+      toast.error("Please select at least one order")
+      return
+    }
+    setSendingInvoice(true)
+    setSendSuccess(false)
+    try {
+      const selectedList = orders.filter((o) => selectedOrdersForResend.has(o.id))
+      const payload = selectedList.map((order) => {
+        const orderData = {
+          ...order,
+          transactionId: order.transactionId || `TXN${order.id}`,
+          paymentMethod: order.paymentMethod || "Online Payment",
+          tax: order.tax || 0,
+          finalTotal: order.total,
+          status: order.status || "completed",
+        }
+        return { orderData, invoiceHTML: generateEmailInvoiceHTML(orderData) }
+      })
+      const res = await fetch(getFullUrl("/payment/resend-invoice"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orders: payload }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSendSuccess(true)
+        toast.success(`✅ ${data.message}`)
+        setTimeout(() => {
+          setSelectedOrdersForResend(new Set())
+          setBulkResendMode(false)
+          setSendSuccess(false)
+        }, 1800)
+      } else {
+        toast.error("❌ Some invoices failed to send")
+      }
+    } catch (e) {
+      toast.error("❌ Error: " + e.message)
+    } finally {
+      setSendingInvoice(false)
+    }
   }
 
   useEffect(() => {
@@ -287,6 +405,17 @@ const AdminDashboard = () => {
   }
 
   return (
+    <>
+    <style>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes fadeScaleIn {
+        from { opacity: 0; transform: scale(0.85); }
+        to { opacity: 1; transform: scale(1); }
+      }
+    `}</style>
     <div
       style={{
         minHeight: "100vh",
@@ -575,20 +704,7 @@ const AdminDashboard = () => {
                 <FontAwesomeIcon icon={faPlus} /> Add New Product
               </button>
 
-              <button
-                onClick={() => setBulkUpdateMode(!bulkUpdateMode)}
-                style={{
-                  padding: "1rem",
-                  background: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                }}
-              >
-                <FontAwesomeIcon icon={faBox} /> Bulk Stock Update
-              </button>
+
 
               <button
                 onClick={() => setActiveTab("inventory")}
@@ -642,9 +758,85 @@ const AdminDashboard = () => {
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: "1.5rem",
+                flexWrap: "wrap",
+                gap: "1rem",
               }}
             >
               <h2 style={{ margin: 0, color: "#333" }}>📋 Order Management</h2>
+              <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => {
+                    setBulkResendMode(!bulkResendMode)
+                    setSelectedOrdersForResend(new Set())
+                  }}
+                  style={{
+                    padding: "0.6rem 1.2rem",
+                    background: bulkResendMode ? "#6c757d" : "#6f42c1",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    fontSize: "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faEnvelope} />
+                  {bulkResendMode ? "Cancel Bulk Select" : "Bulk Resend Invoices"}
+                </button>
+                {bulkResendMode && selectedOrdersForResend.size > 0 && (
+                  <button
+                    onClick={handleBulkResendInvoices}
+                    disabled={sendingInvoice || sendSuccess}
+                    style={{
+                      padding: "0.6rem 1.2rem",
+                      background: sendSuccess ? "#10b981" : sendingInvoice ? "#28a745" : "#28a745",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "8px",
+                      cursor: sendingInvoice || sendSuccess ? "not-allowed" : "pointer",
+                      fontWeight: "600",
+                      fontSize: "0.85rem",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      minWidth: "160px",
+                      justifyContent: "center",
+                      transition: "background 0.3s",
+                    }}
+                  >
+                    {sendSuccess ? (
+                      <>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        All Sent!
+                      </>
+                    ) : sendingInvoice ? (
+                      <>
+                        <span style={{
+                          width: "14px",
+                          height: "14px",
+                          border: "2px solid rgba(255,255,255,0.4)",
+                          borderTop: "2px solid white",
+                          borderRadius: "50%",
+                          display: "inline-block",
+                          animation: "spin 0.8s linear infinite",
+                          flexShrink: 0,
+                        }} />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faPaperPlane} />
+                        {`Send to ${selectedOrdersForResend.size} order(s)`}
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Order Filters */}
@@ -740,78 +932,32 @@ const AdminDashboard = () => {
           >
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
+              <thead>
                   <tr style={{ background: "#f8f9fa" }}>
-                    <th
-                      style={{
-                        padding: "1rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#333",
-                      }}
-                    >
-                      Order ID
-                    </th>
-                    <th
-                      style={{
-                        padding: "1rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#333",
-                      }}
-                    >
-                      Customer
-                    </th>
-                    <th
-                      style={{
-                        padding: "1rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#333",
-                      }}
-                    >
-                      Products
-                    </th>
-                    <th
-                      style={{
-                        padding: "1rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#333",
-                      }}
-                    >
-                      Amount
-                    </th>
-                    <th
-                      style={{
-                        padding: "1rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#333",
-                      }}
-                    >
-                      Status
-                    </th>
-                    <th
-                      style={{
-                        padding: "1rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#333",
-                      }}
-                    >
-                      Date
-                    </th>
-                    <th
-                      style={{
-                        padding: "1rem",
-                        textAlign: "left",
-                        fontWeight: "600",
-                        color: "#333",
-                      }}
-                    >
-                      Actions
-                    </th>
+                    {bulkResendMode && (
+                      <th style={{ padding: "1rem", width: "40px" }}>
+                        <input
+                          type="checkbox"
+                          style={{ width: "16px", height: "16px", accentColor: "#6f42c1" }}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedOrdersForResend(new Set(orders.map((o) => o.id)))
+                            } else {
+                              setSelectedOrdersForResend(new Set())
+                            }
+                          }}
+                          checked={orders.length > 0 && selectedOrdersForResend.size === orders.length}
+                        />
+                      </th>
+                    )}
+                    <th style={{ padding: "1rem", textAlign: "left", fontWeight: "600", color: "#333" }}>Order ID</th>
+                    <th style={{ padding: "1rem", textAlign: "left", fontWeight: "600", color: "#333" }}>Customer</th>
+                    <th style={{ padding: "1rem", textAlign: "left", fontWeight: "600", color: "#333" }}>Products</th>
+                    <th style={{ padding: "1rem", textAlign: "left", fontWeight: "600", color: "#333" }}>Amount</th>
+                    <th style={{ padding: "1rem", textAlign: "left", fontWeight: "600", color: "#333" }}>Payment</th>
+                    <th style={{ padding: "1rem", textAlign: "left", fontWeight: "600", color: "#333" }}>Status</th>
+                    <th style={{ padding: "1rem", textAlign: "left", fontWeight: "600", color: "#333" }}>Date</th>
+                    <th style={{ padding: "1rem", textAlign: "left", fontWeight: "600", color: "#333" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -825,14 +971,29 @@ const AdminDashboard = () => {
                       return matchesSearch && matchesStatus
                     })
                     .map((order, index) => (
-                      <tr key={order.id} style={{ borderBottom: "1px solid #e9ecef" }}>
-                        <td
-                          style={{
-                            padding: "1rem",
-                            fontWeight: "600",
-                            color: "#007bff",
-                          }}
-                        >
+                      <tr
+                        key={order.id}
+                        style={{
+                          borderBottom: "1px solid #e9ecef",
+                          background: bulkResendMode && selectedOrdersForResend.has(order.id) ? "#f0e6ff" : "white",
+                        }}
+                      >
+                        {bulkResendMode && (
+                          <td style={{ padding: "1rem", width: "40px" }}>
+                            <input
+                              type="checkbox"
+                              style={{ width: "16px", height: "16px", accentColor: "#6f42c1" }}
+                              checked={selectedOrdersForResend.has(order.id)}
+                              onChange={(e) => {
+                                const next = new Set(selectedOrdersForResend)
+                                if (e.target.checked) next.add(order.id)
+                                else next.delete(order.id)
+                                setSelectedOrdersForResend(next)
+                              }}
+                            />
+                          </td>
+                        )}
+                        <td style={{ padding: "1rem", fontWeight: "600", color: "#007bff", fontSize: "0.8rem" }}>
                           {order.id}
                         </td>
                         <td style={{ padding: "1rem" }}>
@@ -848,6 +1009,9 @@ const AdminDashboard = () => {
                         </td>
                         <td style={{ padding: "1rem", fontWeight: "600" }}>
                           ₹{order.total ? order.total.toFixed(2) : "0.00"}
+                        </td>
+                        <td style={{ padding: "1rem", fontSize: "0.82rem", color: "#444" }}>
+                          {order.paymentMethod || "Online Payment"}
                         </td>
                         <td style={{ padding: "1rem" }}>
                           <span
@@ -873,30 +1037,49 @@ const AdminDashboard = () => {
                             {order.status || "pending"}
                           </span>
                         </td>
-                        <td
-                          style={{
-                            padding: "1rem",
-                            fontSize: "0.875rem",
-                            color: "#666",
-                          }}
-                        >
+                        <td style={{ padding: "1rem", fontSize: "0.875rem", color: "#666" }}>
                           {order.date ? new Date(order.date).toLocaleDateString() : "N/A"}
                         </td>
                         <td style={{ padding: "1rem" }}>
-                          <div style={{ display: "flex", gap: "0.5rem" }}>
+                          <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
                             <button
-                              onClick={() => generateInvoice(order)}
+                              onClick={() => openInvoiceModal(order)}
                               style={{
-                                padding: "0.5rem 1rem",
+                                padding: "0.4rem 0.8rem",
                                 background: "#007bff",
                                 color: "white",
                                 border: "none",
                                 borderRadius: "4px",
                                 cursor: "pointer",
-                                fontSize: "0.75rem",
+                                fontSize: "0.72rem",
+                                fontWeight: "600",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.3rem",
                               }}
                             >
-                              📄 Invoice
+                              <FontAwesomeIcon icon={faFileInvoice} /> View
+                            </button>
+                            <button
+                              onClick={() => {
+                                setResendModal(order)
+                                setEditedInvoiceNote("")
+                              }}
+                              style={{
+                                padding: "0.4rem 0.8rem",
+                                background: "#6f42c1",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "0.72rem",
+                                fontWeight: "600",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.3rem",
+                              }}
+                            >
+                              <FontAwesomeIcon icon={faPaperPlane} /> Resend
                             </button>
                           </div>
                         </td>
@@ -1008,6 +1191,38 @@ const AdminDashboard = () => {
                   <option value="low">Low Stock (≤10)</option>
                   <option value="out">Out of Stock</option>
                 </select>
+              </div>
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "0.5rem",
+                    fontWeight: "600",
+                    visibility: "hidden",
+                  }}
+                >
+                  Action
+                </label>
+                <button
+                  onClick={() => setBulkUpdateMode(true)}
+                  disabled={bulkUpdateMode}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    background: bulkUpdateMode ? "#6c757d" : "#007bff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: bulkUpdateMode ? "not-allowed" : "pointer",
+                    fontWeight: "600",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faBox} /> Bulk Stock Update
+                </button>
               </div>
             </div>
 
@@ -2001,20 +2216,7 @@ const AdminDashboard = () => {
               >
                 ➕ Add New Product
               </button>
-              <button
-                onClick={() => setBulkUpdateMode(!bulkUpdateMode)}
-                style={{
-                  padding: "1rem",
-                  background: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                }}
-              >
-                📦 Bulk Update Stock
-              </button>
+
               <button
                 onClick={() => {
                   const csvData = Object.values(products)
@@ -2318,6 +2520,285 @@ const AdminDashboard = () => {
         </div>
       )}
     </div>
+
+      {/* ========== INVOICE VIEWER MODAL ========== */}
+      {invoiceModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.65)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            overflowY: "auto",
+            padding: "2rem 1rem",
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setInvoiceModal(null) }}
+        >
+          <div style={{ width: "100%", maxWidth: "900px", position: "relative" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1rem",
+                flexWrap: "wrap",
+                gap: "0.5rem",
+              }}
+            >
+              <h3 style={{ margin: 0, color: "white", fontWeight: 700 }}>
+                <FontAwesomeIcon icon={faFileInvoice} style={{ marginRight: "0.5rem" }} />
+                Invoice — {invoiceModal.id}
+              </h3>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  onClick={() => { setResendModal(invoiceModal); setEditedInvoiceNote(""); setInvoiceModal(null) }}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    background: "#6f42c1",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    fontSize: "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPaperPlane} /> Resend Invoice
+                </button>
+                <button
+                  onClick={() => setInvoiceModal(null)}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    background: "#dc3545",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    fontSize: "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faXmark} /> Close
+                </button>
+              </div>
+            </div>
+            <InvoiceDisplay orderData={invoiceModal} />
+          </div>
+        </div>
+      )}
+
+      {/* ========== RESEND INVOICE MODAL ========== */}
+      {resendModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            zIndex: 10000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setResendModal(null) }}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "16px",
+              padding: "2rem",
+              width: "100%",
+              maxWidth: "500px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Loading / success overlay */}
+            {(sendingInvoice || sendSuccess) && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: sendSuccess ? "rgba(16,185,129,0.93)" : "rgba(111,66,193,0.88)",
+                  zIndex: 10,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "16px",
+                  gap: "1rem",
+                  animation: "fadeScaleIn 0.2s ease",
+                }}
+              >
+                {sendSuccess ? (
+                  <>
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="9 12 11 14 15 10" />
+                    </svg>
+                    <p style={{ color: "white", fontWeight: 700, fontSize: "1.15rem", margin: 0 }}>Invoice Sent!</p>
+                    <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.85rem", margin: 0 }}>Closing automatically...</p>
+                  </>
+                ) : (
+                  <>
+                    <span style={{
+                      width: "48px",
+                      height: "48px",
+                      border: "4px solid rgba(255,255,255,0.3)",
+                      borderTop: "4px solid white",
+                      borderRadius: "50%",
+                      display: "inline-block",
+                      animation: "spin 0.9s linear infinite",
+                    }} />
+                    <p style={{ color: "white", fontWeight: 700, fontSize: "1rem", margin: 0 }}>Sending Invoice...</p>
+                    <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.8rem", margin: 0 }}>Please wait</p>
+                  </>
+                )}
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h3 style={{ margin: 0, color: "#1e293b" }}>
+                <FontAwesomeIcon icon={faPaperPlane} style={{ marginRight: "0.5rem", color: "#6f42c1" }} />
+                Resend Invoice
+              </h3>
+              <button
+                onClick={() => setResendModal(null)}
+                style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.2rem", color: "#666" }}
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: "1rem", padding: "1rem", background: "#f8f9fa", borderRadius: "8px", fontSize: "0.875rem" }}>
+              <div><strong>Order:</strong> {resendModal.id}</div>
+              <div><strong>Customer:</strong> {resendModal.customerName || "Guest Customer"}</div>
+              <div><strong>Default Email:</strong> {resendModal.customerEmail || "N/A"}</div>
+              <div><strong>Payment:</strong> {resendModal.paymentMethod || "Online Payment"}</div>
+              <div><strong>Amount:</strong> ₹{resendModal.total?.toFixed(2)}</div>
+            </div>
+
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: "600", fontSize: "0.875rem" }}>
+                <FontAwesomeIcon icon={faEdit} style={{ marginRight: "0.4rem", color: "#6f42c1" }} />
+                Send To (leave blank to use customer email)
+              </label>
+              <input
+                type="email"
+                id="resend-override-email"
+                placeholder={resendModal.customerEmail || "customer@example.com"}
+                style={{
+                  width: "100%",
+                  padding: "0.75rem",
+                  border: "2px solid #e9ecef",
+                  borderRadius: "8px",
+                  fontSize: "0.875rem",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: "600", fontSize: "0.875rem" }}>
+                <FontAwesomeIcon icon={faEdit} style={{ marginRight: "0.4rem", color: "#6f42c1" }} />
+                Additional Note (optional — appended to invoice)
+              </label>
+              <textarea
+                value={editedInvoiceNote}
+                onChange={(e) => setEditedInvoiceNote(e.target.value)}
+                placeholder="e.g. Sorry for the delay — here is your resent invoice."
+                rows={3}
+                style={{
+                  width: "100%",
+                  padding: "0.75rem",
+                  border: "2px solid #e9ecef",
+                  borderRadius: "8px",
+                  fontSize: "0.875rem",
+                  resize: "vertical",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setResendModal(null)}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  background: "#f1f5f9",
+                  color: "#64748b",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={sendingInvoice || sendSuccess}
+                onClick={() => {
+                  const overrideEmail = document.getElementById("resend-override-email")?.value?.trim() || null
+                  handleResendInvoice(resendModal, overrideEmail || null, editedInvoiceNote)
+                }}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  background: sendSuccess ? "#10b981" : sendingInvoice ? "#6f42c1" : "#6f42c1",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: sendingInvoice || sendSuccess ? "not-allowed" : "pointer",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  minWidth: "140px",
+                  justifyContent: "center",
+                  transition: "background 0.3s",
+                }}
+              >
+                {sendSuccess ? (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Sent!
+                  </>
+                ) : sendingInvoice ? (
+                  <>
+                    <span style={{
+                      width: "16px",
+                      height: "16px",
+                      border: "2.5px solid rgba(255,255,255,0.4)",
+                      borderTop: "2.5px solid white",
+                      borderRadius: "50%",
+                      display: "inline-block",
+                      animation: "spin 0.8s linear infinite",
+                      flexShrink: 0,
+                    }} />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faPaperPlane} />
+                    Send Invoice
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

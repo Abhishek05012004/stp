@@ -20,6 +20,8 @@ const createOrder = async (req, res) => {
       tax: orderData.tax,
       total: orderData.total + orderData.tax,
       status: orderData.status || "completed",
+      paymentMethod: orderData.paymentMethod || "Online Payment",
+      transactionId: orderData.transactionId || "",
     })
 
     await order.save()
@@ -54,6 +56,8 @@ const getOrderById = async (req, res) => {
         total: order.subtotal,
         tax: order.tax,
         status: order.status,
+        paymentMethod: order.paymentMethod || "Online Payment",
+        transactionId: order.transactionId || "",
         date: order.createdAt.toISOString(),
       })
     } else {
@@ -79,6 +83,8 @@ const getAllOrders = async (req, res) => {
       tax: order.tax,
       total: order.total,
       status: order.status,
+      paymentMethod: order.paymentMethod || "Online Payment",
+      transactionId: order.transactionId || "",
       date: order.createdAt,
     }))
 
@@ -181,7 +187,9 @@ const createOrderWithStockValidation = async (req, res) => {
           subtotal: orderData.total,
           tax: orderData.tax,
           total: orderData.total + orderData.tax,
-          status: "completed", // Mark as completed since payment was successful
+          status: "completed",
+          paymentMethod: orderData.paymentMethod || "Online Payment",
+          transactionId: orderData.transactionId || "",
         })
 
         await order.save({ session })
@@ -251,6 +259,38 @@ const cancelOrderAndRestoreStock = async (req, res) => {
   }
 }
 
+// Update customer email for an order (admin correcting wrong email)
+const updateOrderEmail = async (req, res) => {
+  try {
+    const orderId = req.params.id
+    const { customerEmail } = req.body
+
+    if (!customerEmail || !customerEmail.includes("@")) {
+      return res.status(400).json({ error: "Valid email is required" })
+    }
+
+    const order = await Order.findOneAndUpdate(
+      { orderId },
+      { customerEmail },
+      { new: true }
+    )
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" })
+    }
+
+    res.json({
+      success: true,
+      message: "Customer email updated successfully",
+      orderId: order.orderId,
+      customerEmail: order.customerEmail,
+    })
+  } catch (error) {
+    console.error("Error updating order email:", error)
+    res.status(500).json({ error: "Failed to update customer email", message: error.message })
+  }
+}
+
 module.exports = {
   createOrder,
   getOrderById,
@@ -258,4 +298,5 @@ module.exports = {
   updateOrderStatus,
   createOrderWithStockValidation,
   cancelOrderAndRestoreStock,
+  updateOrderEmail,
 }
