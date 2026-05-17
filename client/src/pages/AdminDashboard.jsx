@@ -65,6 +65,71 @@ const AdminDashboard = () => {
   const [sendSuccess, setSendSuccess] = useState(false) // for checkmark animation
   const invoiceRef = useRef(null)
 
+  // Pagination states
+  const [ordersPage, setOrdersPage] = useState(1)
+  const [productsPage, setProductsPage] = useState(1)
+  const ORDERS_PER_PAGE = 20
+
+  const [gridColumns, setGridColumns] = useState(4)
+  const gridRef = useRef(null)
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!gridRef.current) return
+      const gridStyle = window.getComputedStyle(gridRef.current)
+      const gridTemplateColumns = gridStyle.getPropertyValue("grid-template-columns")
+      const cols = gridTemplateColumns.trim().split(/\s+/).length
+      if (cols > 0 && cols !== gridColumns) {
+        setGridColumns(cols)
+      }
+    }
+
+    handleResize()
+    const observer = new ResizeObserver(handleResize)
+    if (gridRef.current) {
+      observer.observe(gridRef.current)
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [activeTab, products])
+
+  const PRODUCTS_PER_PAGE = Math.ceil(12 / gridColumns) * gridColumns
+
+  // Pagination page range utility for clean buttons formatting
+  const getPaginationRange = (current, total) => {
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1)
+    }
+
+    const range = []
+    
+    // Always include page 1
+    range.push(1)
+
+    if (current <= 4) {
+      range.push(2, 3, 4, 5)
+      range.push("...")
+      range.push(total)
+    } else if (current >= total - 3) {
+      range.push("...")
+      for (let i = total - 4; i < total; i++) {
+        range.push(i)
+      }
+      range.push(total)
+    } else {
+      range.push("...")
+      range.push(current - 1, current, current + 1)
+      range.push("...")
+      range.push(total)
+    }
+
+    return range
+  }
+
   const { admin, logout, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
@@ -73,6 +138,16 @@ const AdminDashboard = () => {
       setActiveTab(tab)
     }
   }, [tab, activeTab])
+
+  // Reset pagination pages to 1 on filter or search keyword changes
+  useEffect(() => {
+    setOrdersPage(1)
+  }, [searchTerm])
+
+  useEffect(() => {
+    setProductsPage(1)
+    setSelectedProducts(new Set()) // Clear selected products on filter change for safety
+  }, [searchTerm, categoryFilter, stockFilter])
 
   // View invoice in modal (no navigation)
   const openInvoiceModal = (order) => {
@@ -371,6 +446,30 @@ const AdminDashboard = () => {
 
     return matchesSearch && matchesCategory && matchesStock
   })
+
+  // Paginated products list
+  const totalProductsPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE)
+  const paginatedProducts = filteredProducts.slice(
+    (productsPage - 1) * PRODUCTS_PER_PAGE,
+    productsPage * PRODUCTS_PER_PAGE
+  )
+
+  // Filter orders (completed only as requested)
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.customerName && order.customerName.toLowerCase().includes(searchTerm.toLowerCase()))
+
+    return matchesSearch && order.status === "completed"
+  })
+
+  // Paginated completed orders list
+  const totalOrdersPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE)
+  const paginatedOrders = filteredOrders.slice(
+    (ordersPage - 1) * ORDERS_PER_PAGE,
+    ordersPage * ORDERS_PER_PAGE
+  )
 
   if (loading) {
     return (
@@ -1032,12 +1131,12 @@ const AdminDashboard = () => {
                           style={{ width: "16px", height: "16px", accentColor: "#6f42c1" }}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSelectedOrdersForResend(new Set(orders.map((o) => o.id)))
+                              setSelectedOrdersForResend(new Set(filteredOrders.map((o) => o.id)))
                             } else {
                               setSelectedOrdersForResend(new Set())
                             }
                           }}
-                          checked={orders.length > 0 && selectedOrdersForResend.size === orders.length}
+                          checked={filteredOrders.length > 0 && selectedOrdersForResend.size === filteredOrders.length}
                         />
                       </th>
                     )}
@@ -1052,17 +1151,16 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders
-                    .filter((order) => {
-                      const matchesSearch =
-                        searchTerm === "" ||
-                        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        (order.customerName && order.customerName.toLowerCase().includes(searchTerm.toLowerCase()))
-                      
-                      // Only show completed orders as requested
-                      return matchesSearch && order.status === "completed"
-                    })
-                    .map((order, index) => (
+                  {filteredOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={bulkResendMode ? 9 : 8} style={{ padding: "3rem", textAlign: "center", color: "#718096" }}>
+                        <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📋</div>
+                        <div style={{ fontWeight: "600" }}>No completed orders found</div>
+                        <div style={{ fontSize: "0.85rem", color: "#a0aec0" }}>Try checking your search keyword.</div>
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedOrders.map((order, index) => (
                       <tr
                         key={order.id}
                         style={{
@@ -1176,10 +1274,171 @@ const AdminDashboard = () => {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
+
+            {/* Orders Pagination Controls */}
+            {totalOrdersPages > 1 && (
+              <div className="admin-pagination-container">
+                <div style={{ color: "#718096", fontSize: "0.9rem", fontWeight: "500" }}>
+                  Showing <span style={{ fontWeight: "700", color: "#2d3748" }}>{(ordersPage - 1) * ORDERS_PER_PAGE + 1}</span> to{" "}
+                  <span style={{ fontWeight: "700", color: "#2d3748" }}>
+                    {Math.min(ordersPage * ORDERS_PER_PAGE, filteredOrders.length)}
+                  </span>{" "}
+                  of <span style={{ fontWeight: "700", color: "#2d3748" }}>{filteredOrders.length}</span> orders
+                </div>
+                
+                <div className="pagination-controls-wrapper">
+                  <div className="pagination-buttons-list">
+                    <button
+                      disabled={ordersPage === 1}
+                      onClick={() => setOrdersPage((p) => Math.max(p - 1, 1))}
+                      style={{
+                        padding: "0.5rem 0.85rem",
+                        background: ordersPage === 1 ? "#edf2f7" : "#ffffff",
+                        color: ordersPage === 1 ? "#a0aec0" : "#4a5568",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "6px",
+                        cursor: ordersPage === 1 ? "not-allowed" : "pointer",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      Previous
+                    </button>
+                    {getPaginationRange(ordersPage, totalOrdersPages).map((pNum, index) => {
+                      if (pNum === "...") {
+                        return (
+                          <span
+                            key={`ellipsis-${index}`}
+                            style={{
+                              minWidth: "2.25rem",
+                              height: "2.25rem",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#a0aec0",
+                              fontWeight: "700",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            ...
+                          </span>
+                        )
+                      }
+                      return (
+                        <button
+                          key={pNum}
+                          onClick={() => setOrdersPage(pNum)}
+                          style={{
+                            minWidth: "2.25rem",
+                            height: "2.25rem",
+                            padding: "0 0.5rem",
+                            background: ordersPage === pNum ? "#007bff" : "#ffffff",
+                            color: ordersPage === pNum ? "#ffffff" : "#4a5568",
+                            border: ordersPage === pNum ? "1px solid #007bff" : "1px solid #e2e8f0",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "0.85rem",
+                            fontWeight: "700",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "all 0.2s ease",
+                            boxShadow: ordersPage === pNum ? "0 2px 8px rgba(0, 123, 255, 0.4)" : "none",
+                          }}
+                        >
+                          {pNum}
+                        </button>
+                      )
+                    })}
+                    <button
+                      disabled={ordersPage === totalOrdersPages}
+                      onClick={() => setOrdersPage((p) => Math.min(p + 1, totalOrdersPages))}
+                      style={{
+                        padding: "0.5rem 0.85rem",
+                        background: ordersPage === totalOrdersPages ? "#edf2f7" : "#ffffff",
+                        color: ordersPage === totalOrdersPages ? "#a0aec0" : "#4a5568",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "6px",
+                        cursor: ordersPage === totalOrdersPages ? "not-allowed" : "pointer",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+
+                  {/* Go to Page Input block */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <span style={{ fontSize: "0.85rem", color: "#718096", fontWeight: "600" }}>Go to:</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max={totalOrdersPages}
+                      id="orders-goto-input"
+                      placeholder={ordersPage}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const val = parseInt(e.target.value, 10)
+                          if (!isNaN(val) && val >= 1 && val <= totalOrdersPages) {
+                            setOrdersPage(val)
+                            e.target.value = ""
+                          } else {
+                            alert(`Please enter a valid page number between 1 and ${totalOrdersPages}`)
+                          }
+                        }
+                      }}
+                      style={{
+                        width: "50px",
+                        padding: "0.4rem 0.5rem",
+                        border: "1px solid #cbd5e0",
+                        borderRadius: "6px",
+                        fontSize: "0.85rem",
+                        textAlign: "center",
+                        fontWeight: "700",
+                        color: "#2d3748",
+                        outline: "none",
+                        transition: "all 0.2s ease",
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = "#007bff"}
+                      onBlur={(e) => e.target.style.borderColor = "#cbd5e0"}
+                    />
+                    <button
+                      onClick={() => {
+                        const input = document.getElementById("orders-goto-input")
+                        const val = parseInt(input.value, 10)
+                        if (!isNaN(val) && val >= 1 && val <= totalOrdersPages) {
+                          setOrdersPage(val)
+                          input.value = ""
+                        } else {
+                          alert(`Please enter a valid page number between 1 and ${totalOrdersPages}`)
+                        }
+                      }}
+                      style={{
+                        padding: "0.4rem 0.75rem",
+                        background: "#007bff",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        transition: "background-color 0.2s ease",
+                      }}
+                    >
+                      Go
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1458,8 +1717,8 @@ const AdminDashboard = () => {
             </div>
 
           {/* Products Grid */}
-          <div className="product-grid">
-            {filteredProducts.map((product) => (
+          <div className="product-grid" ref={gridRef}>
+            {paginatedProducts.map((product) => (
               <div
                 key={product.id}
                 style={{
@@ -1512,38 +1771,22 @@ const AdminDashboard = () => {
                     display: "flex",
                     alignItems: "center",
                     gap: "1rem",
-                    marginBottom: "1rem",
+                    marginBottom: "1.5rem",
                   }}
                 >
                   <img
-                    src={product.image || "/placeholder.svg"}
+                    src={product.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"}
                     alt={product.name}
                     style={{
-                      width: "60px",
-                      height: "60px",
+                      width: "64px",
+                      height: "64px",
                       borderRadius: "8px",
                       objectFit: "cover",
                     }}
                   />
-                  <div style={{ flex: 1 }}>
-                    <h3
-                      style={{
-                        margin: "0 0 0.5rem 0",
-                        fontSize: "1.1rem",
-                        color: "#333",
-                      }}
-                    >
-                      {product.name}
-                    </h3>
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "#666",
-                        fontSize: "0.9rem",
-                      }}
-                    >
-                      ID: {product.id}
-                    </p>
+                  <div>
+                    <h4 style={{ margin: "0 0 0.25rem 0", color: "#333", fontSize: "1.1rem" }}>{product.name}</h4>
+                    <span style={{ fontSize: "0.8rem", color: "#888" }}>ID: {product.id}</span>
                   </div>
                 </div>
 
@@ -1552,7 +1795,7 @@ const AdminDashboard = () => {
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
                     gap: "1rem",
-                    marginBottom: "1rem",
+                    marginBottom: "1.5rem",
                   }}
                 >
                   <div>
@@ -1566,15 +1809,7 @@ const AdminDashboard = () => {
                     >
                       Price
                     </label>
-                    <div
-                      style={{
-                        fontSize: "1.1rem",
-                        fontWeight: "600",
-                        color: "#28a745",
-                      }}
-                    >
-                      ₹{product.price}
-                    </div>
+                    <span style={{ fontWeight: "700", color: "#28a745", fontSize: "1.1rem" }}>₹{product.price}</span>
                   </div>
                   <div>
                     <label
@@ -1587,27 +1822,27 @@ const AdminDashboard = () => {
                     >
                       Category
                     </label>
-                    <div
+                    <span
                       style={{
-                        fontSize: "0.9rem",
                         padding: "0.25rem 0.5rem",
-                        background: "#e9ecef",
+                        background: "#f1f3f5",
                         borderRadius: "4px",
-                        display: "inline-block",
+                        fontSize: "0.8rem",
+                        color: "#495057",
                       }}
                     >
                       {product.category}
-                    </div>
+                    </span>
                   </div>
                 </div>
 
-                <div style={{ marginBottom: "1rem" }}>
+                <div style={{ marginBottom: "1.5rem" }}>
                   <label
                     style={{
                       display: "block",
                       fontSize: "0.8rem",
                       color: "#666",
-                      marginBottom: "0.25rem",
+                      marginBottom: "0.5rem",
                     }}
                   >
                     Stock
@@ -1617,26 +1852,21 @@ const AdminDashboard = () => {
                       <input
                         type="number"
                         defaultValue={product.stock}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            handleStockUpdate(product.id, e.target.value)
-                          }
-                        }}
+                        id={`stock-${product.id}`}
                         style={{
-                          flex: 1,
-                          padding: "0.5rem",
-                          border: "2px solid #007bff",
+                          width: "80px",
+                          padding: "0.25rem",
                           borderRadius: "4px",
+                          border: "1px solid #ced4da",
                         }}
-                        autoFocus
                       />
                       <button
-                        onClick={(e) => {
-                          const input = e.target.parentElement.querySelector("input")
+                        onClick={() => {
+                          const input = document.getElementById(`stock-${product.id}`)
                           handleStockUpdate(product.id, input.value)
                         }}
                         style={{
-                          padding: "0.5rem",
+                          padding: "0.25rem 0.5rem",
                           background: "#28a745",
                           color: "white",
                           border: "none",
@@ -1644,43 +1874,35 @@ const AdminDashboard = () => {
                           cursor: "pointer",
                         }}
                       >
-                        ✓
+                        Save
                       </button>
                       <button
                         onClick={() => setEditingProduct(null)}
                         style={{
-                          padding: "0.5rem",
-                          background: "#dc3545",
+                          padding: "0.25rem 0.5rem",
+                          background: "#6c757d",
                           color: "white",
                           border: "none",
                           borderRadius: "4px",
                           cursor: "pointer",
                         }}
                       >
-                        ✕
+                        Cancel
                       </button>
                     </div>
                   ) : (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span
                         style={{
-                          fontSize: "1.1rem",
-                          fontWeight: "600",
-                          color: product.stock === 0 ? "#dc3545" : product.stock <= 10 ? "#ffc107" : "#28a745",
+                          fontWeight: "bold",
+                          color: product.stock === 0 ? "#dc3545" : product.stock <= 10 ? "#fd7e14" : "#28a745",
                         }}
                       >
-                        {product.stock} units
-                        {product.stock === 0 && " (Out of Stock)"}
-                        {product.stock > 0 && product.stock <= 10 && " (Low Stock)"}
+                        {product.stock} units{" "}
+                        {product.stock === 0 ? "(Out of Stock)" : product.stock <= 10 ? "(Low Stock)" : ""}
                       </span>
                       {!bulkUpdateMode && (
-                        <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <div style={{ display: "flex", gap: "0.25rem" }}>
                           <button
                             onClick={() => setEditingProduct(product.id)}
                             style={{
@@ -1741,6 +1963,166 @@ const AdminDashboard = () => {
               </div>
             ))}
           </div>
+
+          {/* Products Pagination Controls */}
+          {totalProductsPages > 1 && (
+            <div className="admin-pagination-container products-pagination">
+              <div style={{ color: "#718096", fontSize: "0.9rem", fontWeight: "500" }}>
+                Showing <span style={{ fontWeight: "700", color: "#2d3748" }}>{(productsPage - 1) * PRODUCTS_PER_PAGE + 1}</span> to{" "}
+                <span style={{ fontWeight: "700", color: "#2d3748" }}>
+                  {Math.min(productsPage * PRODUCTS_PER_PAGE, filteredProducts.length)}
+                </span>{" "}
+                of <span style={{ fontWeight: "700", color: "#2d3748" }}>{filteredProducts.length}</span> products
+              </div>
+              
+              <div className="pagination-controls-wrapper">
+                <div className="pagination-buttons-list">
+                  <button
+                    disabled={productsPage === 1}
+                    onClick={() => setProductsPage((p) => Math.max(p - 1, 1))}
+                    style={{
+                      padding: "0.5rem 0.85rem",
+                      background: productsPage === 1 ? "#edf2f7" : "#ffffff",
+                      color: productsPage === 1 ? "#a0aec0" : "#4a5568",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "6px",
+                      cursor: productsPage === 1 ? "not-allowed" : "pointer",
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    Previous
+                  </button>
+                  {getPaginationRange(productsPage, totalProductsPages).map((pNum, index) => {
+                    if (pNum === "...") {
+                      return (
+                        <span
+                          key={`ellipsis-${index}`}
+                          style={{
+                            minWidth: "2.25rem",
+                            height: "2.25rem",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#a0aec0",
+                            fontWeight: "700",
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          ...
+                        </span>
+                      )
+                    }
+                    return (
+                      <button
+                        key={pNum}
+                        onClick={() => setProductsPage(pNum)}
+                        style={{
+                          minWidth: "2.25rem",
+                          height: "2.25rem",
+                          padding: "0 0.5rem",
+                          background: productsPage === pNum ? "#007bff" : "#ffffff",
+                          color: productsPage === pNum ? "#ffffff" : "#4a5568",
+                          border: productsPage === pNum ? "1px solid #007bff" : "1px solid #e2e8f0",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontSize: "0.85rem",
+                          fontWeight: "700",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "all 0.2s ease",
+                          boxShadow: productsPage === pNum ? "0 2px 8px rgba(0, 123, 255, 0.4)" : "none",
+                        }}
+                      >
+                        {pNum}
+                      </button>
+                    )
+                  })}
+                  <button
+                    disabled={productsPage === totalProductsPages}
+                    onClick={() => setProductsPage((p) => Math.min(p + 1, totalProductsPages))}
+                    style={{
+                      padding: "0.5rem 0.85rem",
+                      background: productsPage === totalProductsPages ? "#edf2f7" : "#ffffff",
+                      color: productsPage === totalProductsPages ? "#a0aec0" : "#4a5568",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "6px",
+                      cursor: productsPage === totalProductsPages ? "not-allowed" : "pointer",
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+
+                {/* Go to Page Input block */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span style={{ fontSize: "0.85rem", color: "#718096", fontWeight: "600" }}>Go to:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max={totalProductsPages}
+                    id="products-goto-input"
+                    placeholder={productsPage}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const val = parseInt(e.target.value, 10)
+                        if (!isNaN(val) && val >= 1 && val <= totalProductsPages) {
+                          setProductsPage(val)
+                          e.target.value = ""
+                        } else {
+                          alert(`Please enter a valid page number between 1 and ${totalProductsPages}`)
+                        }
+                      }
+                    }}
+                    style={{
+                      width: "50px",
+                      padding: "0.4rem 0.5rem",
+                      border: "1px solid #cbd5e0",
+                      borderRadius: "6px",
+                      fontSize: "0.85rem",
+                      textAlign: "center",
+                      fontWeight: "700",
+                      color: "#2d3748",
+                      outline: "none",
+                      transition: "all 0.2s ease",
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = "#007bff"}
+                    onBlur={(e) => e.target.style.borderColor = "#cbd5e0"}
+                  />
+                  <button
+                    onClick={() => {
+                      const input = document.getElementById("products-goto-input")
+                      const val = parseInt(input.value, 10)
+                      if (!isNaN(val) && val >= 1 && val <= totalProductsPages) {
+                        setProductsPage(val)
+                        input.value = ""
+                      } else {
+                        alert(`Please enter a valid page number between 1 and ${totalProductsPages}`)
+                      }
+                    }}
+                    style={{
+                      padding: "0.4rem 0.75rem",
+                      background: "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      transition: "background-color 0.2s ease",
+                    }}
+                  >
+                    Go
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {filteredProducts.length === 0 && (
             <div

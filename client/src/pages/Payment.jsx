@@ -420,16 +420,7 @@ const Payment = () => {
         </div>
 
         <div className="payment-container">
-          <div
-            style={{
-              textAlign: "center",
-              padding: "2rem",
-              background: "#fff3cd",
-              border: "2px solid #ffeaa7",
-              borderRadius: "15px",
-              marginBottom: "2rem",
-            }}
-          >
+          <div className="payment-warning-card">
             <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>
               <FontAwesomeIcon icon={faBox} />
             </div>
@@ -437,16 +428,8 @@ const Payment = () => {
             <p style={{ color: "#856404", fontSize: "16px", marginBottom: "1rem" }}>{stockValidationError.message}</p>
 
             {stockValidationError.unavailableItems.length > 0 && (
-              <div
-                style={{
-                  background: "white",
-                  padding: "1.5rem",
-                  borderRadius: "10px",
-                  margin: "1rem 0",
-                  border: "1px solid #ffeaa7",
-                }}
-              >
-                <h3 style={{ color: "#856404", marginBottom: "1rem" }}>Unavailable Items:</h3>
+              <div className="payment-warning-box">
+                <h3>Unavailable Items:</h3>
                 <div style={{ textAlign: "left", maxWidth: "500px", margin: "0 auto" }}>
                   {stockValidationError.unavailableItems.map((item, index) => (
                     <div
@@ -537,16 +520,7 @@ const Payment = () => {
         </div>
 
         <div className="payment-container">
-          <div
-            style={{
-              textAlign: "center",
-              padding: "2rem",
-              background: "#d4edda",
-              border: "2px solid #c3e6cb",
-              borderRadius: "15px",
-              marginBottom: "2rem",
-            }}
-          >
+          <div className="payment-success-card">
             <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>
               <FontAwesomeIcon icon={faCircleCheck} style={{ color: "#28a745" }} />
             </div>
@@ -556,34 +530,26 @@ const Payment = () => {
             </p>
 
             {orderDetails && (
-              <div
-                style={{
-                  background: "white",
-                  padding: "1.5rem",
-                  borderRadius: "10px",
-                  margin: "1rem 0",
-                  border: "1px solid #c3e6cb",
-                }}
-              >
-                <h3 style={{ color: "#155724", marginBottom: "1rem" }}>Order Details</h3>
-                <div style={{ textAlign: "left", maxWidth: "400px", margin: "0 auto" }}>
+              <div className="payment-details-box">
+                <h3>Order Details</h3>
+                <div className="payment-details-list">
                   <p>
-                    <strong>Order ID:</strong> {orderDetails.id}
+                    <strong>Order ID:</strong> <span>{orderDetails.id}</span>
                   </p>
                   <p>
-                    <strong>Transaction ID:</strong> {orderDetails.transactionId}
+                    <strong>Transaction ID:</strong> <span>{orderDetails.transactionId}</span>
                   </p>
                   <p>
-                    <strong>Amount Paid:</strong> ₹{orderDetails.finalTotal}
+                    <strong>Amount Paid:</strong> <span>₹{orderDetails.finalTotal}</span>
                   </p>
                   <p>
-                    <strong>Payment Method:</strong> {orderDetails.paymentMethod}
+                    <strong>Payment Method:</strong> <span>{orderDetails.paymentMethod}</span>
                   </p>
                   <p>
-                    <strong>Items:</strong> {orderDetails.items.length} items
+                    <strong>Items:</strong> <span>{orderDetails.items.length} items</span>
                   </p>
                   <p>
-                    <strong>Status:</strong> <FontAwesomeIcon icon={faCircleCheck} /> Confirmed & Stock Updated
+                    <strong>Status:</strong> <span><FontAwesomeIcon icon={faCircleCheck} style={{ color: "#28a745" }} /> Confirmed & Stock Updated</span>
                   </p>
                 </div>
               </div>
@@ -609,33 +575,16 @@ const Payment = () => {
         </div>
 
         <div className="payment-container">
-          <div
-            style={{
-              textAlign: "center",
-              padding: "2rem",
-              background: "#f8d7da",
-              border: "2px solid #f5c6cb",
-              borderRadius: "15px",
-              marginBottom: "2rem",
-            }}
-          >
+          <div className="payment-failed-card">
             <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>
               <FontAwesomeIcon icon={faCircleXmark} style={{ color: "#dc3545" }} />
             </div>
             <h2 style={{ color: "#721c24", marginBottom: "1rem" }}>Payment Could Not Be Processed</h2>
             <p style={{ color: "#721c24", fontSize: "16px", marginBottom: "1rem" }}>{errorMessage}</p>
 
-            <div
-              style={{
-                background: "white",
-                padding: "1.5rem",
-                borderRadius: "10px",
-                margin: "1rem 0",
-                border: "1px solid #f5c6cb",
-              }}
-            >
-              <h3 style={{ color: "#721c24", marginBottom: "1rem" }}>What went wrong?</h3>
-              <ul style={{ textAlign: "left", color: "#721c24", maxWidth: "400px", margin: "0 auto" }}>
+            <div className="payment-failed-box">
+              <h3>What went wrong?</h3>
+              <ul className="payment-failed-list" style={{ color: "#721c24", maxWidth: "400px", margin: "0 auto" }}>
                 <li>UPI app may not be installed</li>
                 <li>Insufficient balance in account</li>
                 <li>Network connectivity issues</li>
@@ -682,18 +631,9 @@ const Payment = () => {
               </Link>
             </div>
 
-            <div
-              style={{
-                marginTop: "2rem",
-                padding: "1rem",
-                background: "#fff3cd",
-                border: "1px solid #ffeaa7",
-                borderRadius: "8px",
-                color: "#856404",
-              }}
-            >
+            <div className="payment-solutions-box">
               <h4>💡 Try These Solutions:</h4>
-              <ul style={{ textAlign: "left", margin: "0.5rem 0" }}>
+              <ul className="payment-failed-list">
                 <li>Check your internet connection</li>
                 <li>Ensure UPI app is installed and working</li>
                 <li>Verify sufficient account balance</li>
