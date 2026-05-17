@@ -15,9 +15,25 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
   const scannerRef = useRef(null)
   const [isScanning, setIsScanning] = useState(false)
   const [scanStatus, setScanStatus] = useState("idle")
-  const [lastScanned, setLastScanned] = useState("")
   const [cameraError, setCameraError] = useState(false)
   const { addItemOnce, isItemInCart } = useCart()
+
+  const [pendingProduct, setPendingProduct] = useState(null)
+  const [duplicateProduct, setDuplicateProduct] = useState(null)
+
+  const lastScannedRef = useRef("")
+  const pendingProductRef = useRef(null)
+  const duplicateProductRef = useRef(null)
+
+  const setPendingProductWithRef = (val) => {
+    pendingProductRef.current = val
+    setPendingProduct(val)
+  }
+
+  const setDuplicateProductWithRef = (val) => {
+    duplicateProductRef.current = val
+    setDuplicateProduct(val)
+  }
 
   useEffect(() => {
     preloadAudio()
@@ -31,6 +47,9 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
         scannerRef.current = null
         setIsScanning(false)
       }
+      setPendingProductWithRef(null)
+      setDuplicateProductWithRef(null)
+      lastScannedRef.current = ""
       return
     }
 
@@ -69,74 +88,62 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
   }, [isActive])
 
   const handleScanResult = async (data) => {
-    if (data === lastScanned) return
+    if (pendingProductRef.current || duplicateProductRef.current) return
 
-    // Check if item is already in cart to display notice smoothly and silently
-    if (isItemInCart(data)) {
-      setLastScanned(data)
-      setScanStatus("duplicate")
-
-      setTimeout(() => {
-        setScanStatus("idle")
-        setLastScanned("")
-      }, 3000)
-      return
-    }
-
-    setLastScanned(data)
-    setScanStatus("scanning")
-    playBeepSound()
+    if (data === lastScannedRef.current) return
+    lastScannedRef.current = data
 
     try {
       const product = await getProductById(data)
 
       if (product) {
         if (isItemInCart(product.id)) {
-          setTimeout(() => {
-            setScanStatus("duplicate")
-
-            setTimeout(() => {
-              setScanStatus("idle")
-              setLastScanned("")
-            }, 3000)
-          }, 500)
+          setDuplicateProductWithRef(product)
         } else {
-          setTimeout(() => {
-            setScanStatus("success")
-            playSuccessSound()
-            addItemOnce(product)
-
-            if (onProductAdded) {
-              onProductAdded(product)
-            }
-
-            setTimeout(() => {
-              setScanStatus("idle")
-              setLastScanned("")
-            }, 2000)
-          }, 500)
+          playBeepSound()
+          setPendingProductWithRef(product)
         }
       } else {
+        setScanStatus("error")
         setTimeout(() => {
-          setScanStatus("error")
-
-          setTimeout(() => {
-            setScanStatus("idle")
-            setLastScanned("")
-          }, 2000)
-        }, 500)
+          setScanStatus("idle")
+          lastScannedRef.current = ""
+        }, 2000)
       }
     } catch (error) {
       console.error("Error fetching product:", error)
+      setScanStatus("error")
       setTimeout(() => {
-        setScanStatus("error")
-
-        setTimeout(() => {
-          setScanStatus("idle")
-          setLastScanned("")
-        }, 2000)
-      }, 500)
+        setScanStatus("idle")
+        lastScannedRef.current = ""
+      }, 2000)
     }
+  }
+
+  const handleConfirmAdd = () => {
+    if (pendingProduct) {
+      playSuccessSound()
+      addItemOnce(pendingProduct)
+      if (onProductAdded) {
+        onProductAdded(pendingProduct)
+      }
+      setScanStatus("success")
+      setTimeout(() => {
+        setScanStatus("idle")
+      }, 1500)
+    }
+    setPendingProductWithRef(null)
+    lastScannedRef.current = ""
+  }
+
+  const handleCancelAdd = () => {
+    setPendingProductWithRef(null)
+    lastScannedRef.current = ""
+  }
+
+  const handleConfirmDuplicate = () => {
+    setDuplicateProductWithRef(null)
+    lastScannedRef.current = ""
   }
 
   const retryCamera = async () => {
@@ -181,7 +188,165 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      style={{ position: "relative" }}
     >
+      <AnimatePresence>
+        {pendingProduct && (
+          <motion.div
+            className="scanner-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0, 0, 0, 0.75)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100,
+              backdropFilter: "blur(12px)",
+              padding: "1.5rem",
+            }}
+          >
+            <motion.div
+              className="scanner-modal-card"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              style={{
+                background: "rgba(30, 30, 30, 0.95)",
+                borderRadius: "var(--radius-xl)",
+                padding: "2rem",
+                width: "100%",
+                maxWidth: "380px",
+                border: "1px solid var(--border-light)",
+                boxShadow: "var(--shadow-xl)",
+                textAlign: "center",
+                color: "var(--text-primary)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "3rem",
+                  marginBottom: "1rem",
+                  background: "linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                🛒
+              </div>
+              <h3 style={{ margin: "0 0 1rem 0", fontWeight: "700" }}>Confirm Add</h3>
+              <p style={{ margin: "0 0 1.5rem 0", lineHeight: "1.6", color: "var(--text-secondary)" }}>
+                <strong>{pendingProduct.name}</strong> will be added to your cart. Do you want to confirm?
+              </p>
+              <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                <button
+                  onClick={handleCancelAdd}
+                  className="nav-btn secondary"
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "var(--radius-lg)",
+                    fontWeight: "600",
+                    margin: 0,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmAdd}
+                  className="nav-btn primary"
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "var(--radius-lg)",
+                    fontWeight: "600",
+                    margin: 0,
+                  }}
+                >
+                  OK
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {duplicateProduct && (
+          <motion.div
+            className="scanner-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0, 0, 0, 0.75)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100,
+              backdropFilter: "blur(12px)",
+              padding: "1.5rem",
+            }}
+          >
+            <motion.div
+              className="scanner-modal-card"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              style={{
+                background: "rgba(30, 30, 30, 0.95)",
+                borderRadius: "var(--radius-xl)",
+                padding: "2rem",
+                width: "100%",
+                maxWidth: "380px",
+                border: "1px solid var(--border-light)",
+                boxShadow: "var(--shadow-xl)",
+                textAlign: "center",
+                color: "var(--text-primary)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "3rem",
+                  marginBottom: "1rem",
+                  color: "var(--warning-color)",
+                }}
+              >
+                ⚠️
+              </div>
+              <h3 style={{ margin: "0 0 1rem 0", fontWeight: "700" }}>Already in Cart</h3>
+              <p style={{ margin: "0 0 1.5rem 0", lineHeight: "1.6", color: "var(--text-secondary)" }}>
+                This is already in your cart. If you want, you can increase the quantity by going inside the cart.
+              </p>
+              <button
+                onClick={handleConfirmDuplicate}
+                className="nav-btn primary"
+                style={{
+                  width: "100%",
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: "var(--radius-lg)",
+                  fontWeight: "600",
+                  margin: 0,
+                }}
+              >
+                OK
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <video
         ref={videoRef}
         className="scanner-video"

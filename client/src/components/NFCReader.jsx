@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useCart } from "../context/CartContext.jsx"
 import { getProductById } from "../utils/productData.js"
 import { playBeepSound, playSuccessSound, preloadAudio } from "../utils/soundUtils.js"
@@ -11,12 +11,28 @@ import { faMobileAlt, faRss, faCheckCircle, faTimesCircle, faInfoCircle } from "
 const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
   const [isReading, setIsReading] = useState(false)
   const [nfcStatus, setNfcStatus] = useState("idle")
-  const [lastRead, setLastRead] = useState("")
   const [isNFCSupported, setIsNFCSupported] = useState(false)
   const [permissionGranted, setPermissionGranted] = useState(false)
   const { addItemOnce, isItemInCart } = useCart()
   const abortControllerRef = useRef(null)
   const ndefReaderRef = useRef(null)
+
+  const [pendingProduct, setPendingProduct] = useState(null)
+  const [duplicateProduct, setDuplicateProduct] = useState(null)
+
+  const lastReadRef = useRef("")
+  const pendingProductRef = useRef(null)
+  const duplicateProductRef = useRef(null)
+
+  const setPendingProductWithRef = (val) => {
+    pendingProductRef.current = val
+    setPendingProduct(val)
+  }
+
+  const setDuplicateProductWithRef = (val) => {
+    duplicateProductRef.current = val
+    setDuplicateProduct(val)
+  }
 
   useEffect(() => {
     checkNFCSupport()
@@ -224,86 +240,67 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
         return
       }
 
-      if (productId === lastRead) {
+      if (productId === lastReadRef.current) {
         return
       }
 
-      // Check if item is already in cart to display notice smoothly and silently
-      if (isItemInCart(productId)) {
-        setLastRead(productId)
-        setNfcStatus("info")
-
-        setTimeout(() => {
-          if (isReading) {
-            setNfcStatus("reading")
-            setLastRead("")
-          }
-        }, 4000)
-        return
-      }
-
-      setLastRead(productId)
-      setNfcStatus("reading")
-      playBeepSound()
+      lastReadRef.current = productId
       const product = await getProductById(productId)
 
       if (product) {
         if (isItemInCart(product.id)) {
-          setTimeout(() => {
-            setNfcStatus("info")
-
-            setTimeout(() => {
-              if (isReading) {
-                setNfcStatus("reading")
-                setLastRead("")
-              }
-            }, 4000)
-          }, 500)
+          setDuplicateProductWithRef(product)
         } else {
-          setTimeout(() => {
-            setNfcStatus("success")
-            playSuccessSound()
-            addItemOnce(product)
-
-            if (onProductAdded) {
-              onProductAdded(product)
-            }
-
-            setTimeout(() => {
-              if (isReading) {
-                setNfcStatus("reading")
-                setLastRead("")
-              }
-            }, 3000)
-          }, 500)
+          playBeepSound()
+          setPendingProductWithRef(product)
         }
       } else {
+        setNfcStatus("error")
         setTimeout(() => {
-          setNfcStatus("error")
-
-          setTimeout(() => {
-            if (isReading) {
-              setNfcStatus("reading")
-              setLastRead("")
-            }
-          }, 3000)
-        }, 500)
+          if (isReading) {
+            setNfcStatus("reading")
+            lastReadRef.current = ""
+          }
+        }, 3000)
       }
-
-      setTimeout(() => {
-        setLastRead("")
-      }, 2000)
     } catch (error) {
       console.error("❌ Error processing NFC tag:", error)
       setNfcStatus("error")
-
       setTimeout(() => {
         if (isReading) {
           setNfcStatus("reading")
-          setLastRead("")
+          lastReadRef.current = ""
         }
       }, 3000)
     }
+  }
+
+  const handleConfirmAdd = () => {
+    if (pendingProduct) {
+      playSuccessSound()
+      addItemOnce(pendingProduct)
+      if (onProductAdded) {
+        onProductAdded(pendingProduct)
+      }
+      setNfcStatus("success")
+      setTimeout(() => {
+        if (isReading) {
+          setNfcStatus("reading")
+        }
+      }, 1500)
+    }
+    setPendingProductWithRef(null)
+    lastReadRef.current = ""
+  }
+
+  const handleCancelAdd = () => {
+    setPendingProductWithRef(null)
+    lastReadRef.current = ""
+  }
+
+  const handleConfirmDuplicate = () => {
+    setDuplicateProductWithRef(null)
+    lastReadRef.current = ""
   }
 
   if (!isActive) {
@@ -376,7 +373,165 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
+      style={{ position: "relative" }}
     >
+      <AnimatePresence>
+        {pendingProduct && (
+          <motion.div
+            className="scanner-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0, 0, 0, 0.75)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100,
+              backdropFilter: "blur(12px)",
+              padding: "1.5rem",
+            }}
+          >
+            <motion.div
+              className="scanner-modal-card"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              style={{
+                background: "rgba(30, 30, 30, 0.95)",
+                borderRadius: "var(--radius-xl)",
+                padding: "2rem",
+                width: "100%",
+                maxWidth: "380px",
+                border: "1px solid var(--border-light)",
+                boxShadow: "var(--shadow-xl)",
+                textAlign: "center",
+                color: "var(--text-primary)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "3rem",
+                  marginBottom: "1rem",
+                  background: "linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                🛒
+              </div>
+              <h3 style={{ margin: "0 0 1rem 0", fontWeight: "700" }}>Confirm Add</h3>
+              <p style={{ margin: "0 0 1.5rem 0", lineHeight: "1.6", color: "var(--text-secondary)" }}>
+                <strong>{pendingProduct.name}</strong> will be added to your cart. Do you want to confirm?
+              </p>
+              <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                <button
+                  onClick={handleCancelAdd}
+                  className="nav-btn secondary"
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "var(--radius-lg)",
+                    fontWeight: "600",
+                    margin: 0,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmAdd}
+                  className="nav-btn primary"
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "var(--radius-lg)",
+                    fontWeight: "600",
+                    margin: 0,
+                  }}
+                >
+                  OK
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {duplicateProduct && (
+          <motion.div
+            className="scanner-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0, 0, 0, 0.75)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100,
+              backdropFilter: "blur(12px)",
+              padding: "1.5rem",
+            }}
+          >
+            <motion.div
+              className="scanner-modal-card"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              style={{
+                background: "rgba(30, 30, 30, 0.95)",
+                borderRadius: "var(--radius-xl)",
+                padding: "2rem",
+                width: "100%",
+                maxWidth: "380px",
+                border: "1px solid var(--border-light)",
+                boxShadow: "var(--shadow-xl)",
+                textAlign: "center",
+                color: "var(--text-primary)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "3rem",
+                  marginBottom: "1rem",
+                  color: "var(--warning-color)",
+                }}
+              >
+                ⚠️
+              </div>
+              <h3 style={{ margin: "0 0 1rem 0", fontWeight: "700" }}>Already in Cart</h3>
+              <p style={{ margin: "0 0 1.5rem 0", lineHeight: "1.6", color: "var(--text-secondary)" }}>
+                This is already in your cart. If you want, you can increase the quantity by going inside the cart.
+              </p>
+              <button
+                onClick={handleConfirmDuplicate}
+                className="nav-btn primary"
+                style={{
+                  width: "100%",
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: "var(--radius-lg)",
+                  fontWeight: "600",
+                  margin: 0,
+                }}
+              >
+                OK
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="nfc-reader">
         <motion.div
           className={`nfc-animation ${nfcStatus}`}

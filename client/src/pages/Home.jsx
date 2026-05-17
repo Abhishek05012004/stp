@@ -56,7 +56,8 @@ const Home = () => {
 
   const handleProductAdded = (product) => {
     setLastAddedProduct(product)
-    setIsScannerActive(false)
+    // Scanner always remains active for seamless consecutive scans
+    setIsScannerActive(true)
   }
 
   const handleAddMoreProducts = () => {
