@@ -13,9 +13,6 @@ const Invoice = () => {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    document.title = "Invoice - Scan Tap Pay"
-  }, [])
 
   useEffect(() => {
     const lastOrder = localStorage.getItem("lastOrder")

@@ -264,16 +264,6 @@ const AdminDashboard = () => {
     fetchData()
   }, [isAuthenticated, navigate])
 
-  useEffect(() => {
-    const tabTitles = {
-      overview: "Admin Dashboard - Overview",
-      orders: "Admin Dashboard - Orders",
-      inventory: "Admin Dashboard - Inventory",
-      analytics: "Admin Dashboard - Analytics",
-      settings: "Admin Dashboard - Settings",
-    }
-    document.title = tabTitles[activeTab] || "Admin Dashboard"
-  }, [activeTab])
 
   const fetchData = async () => {
     try {

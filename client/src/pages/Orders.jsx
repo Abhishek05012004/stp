@@ -26,9 +26,6 @@ const Orders = () => {
   const [sortBy, setSortBy] = useState("newest")
   const [isProcessing, setIsProcessing] = useState(false)
 
-  useEffect(() => {
-    document.title = "Orders - Tip Tap Pay"
-  }, [])
 
   useEffect(() => {
     fetchOrders()

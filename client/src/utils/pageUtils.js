@@ -1,39 +1,11 @@
 // Page utility functions for better UX
 
 export const updatePageTitle = (title) => {
-  document.title = `${title} | Scan Tap Pay NFC`
+  // Page titles are now managed centrally in components/SEO.jsx based on routes
 }
 
 export const updatePageMeta = (title, description) => {
-  // Update title
-  document.title = `${title} | Scan Tap Pay NFC`
-
-  // Update meta description
-  let metaDescription = document.querySelector('meta[name="description"]')
-  if (!metaDescription) {
-    metaDescription = document.createElement("meta")
-    metaDescription.name = "description"
-    document.head.appendChild(metaDescription)
-  }
-  metaDescription.content = description
-
-  // Update Open Graph title
-  let ogTitle = document.querySelector('meta[property="og:title"]')
-  if (!ogTitle) {
-    ogTitle = document.createElement("meta")
-    ogTitle.setAttribute("property", "og:title")
-    document.head.appendChild(ogTitle)
-  }
-  ogTitle.content = `${title} | Scan Tap Pay NFC`
-
-  // Update Open Graph description
-  let ogDescription = document.querySelector('meta[property="og:description"]')
-  if (!ogDescription) {
-    ogDescription = document.createElement("meta")
-    ogDescription.setAttribute("property", "og:description")
-    document.head.appendChild(ogDescription)
-  }
-  ogDescription.content = description
+  // Meta tags and titles are now managed centrally in components/SEO.jsx based on routes
 }
 
 export const scrollToTop = (smooth = true) => {
