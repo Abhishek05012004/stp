@@ -16,7 +16,16 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
   const [isScanning, setIsScanning] = useState(false)
   const [scanStatus, setScanStatus] = useState("idle")
   const [cameraError, setCameraError] = useState(false)
-  const { addItemOnce, isItemInCart } = useCart()
+  const { addItemOnce, items } = useCart()
+
+  const itemsRef = useRef(items)
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
+
+  const checkItemInCart = (itemId) => {
+    return itemsRef.current.some((item) => item.id === itemId)
+  }
 
   const [pendingProduct, setPendingProduct] = useState(null)
   const [duplicateProduct, setDuplicateProduct] = useState(null)
@@ -97,7 +106,7 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
       const product = await getProductById(data)
 
       if (product) {
-        if (isItemInCart(product.id)) {
+        if (checkItemInCart(product.id)) {
           setDuplicateProductWithRef(product)
         } else {
           playBeepSound()
@@ -127,10 +136,6 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
       if (onProductAdded) {
         onProductAdded(pendingProduct)
       }
-      setScanStatus("success")
-      setTimeout(() => {
-        setScanStatus("idle")
-      }, 1500)
     }
     setPendingProductWithRef(null)
     lastScannedRef.current = ""
@@ -218,30 +223,27 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               style={{
-                background: "rgba(30, 30, 30, 0.95)",
+                background: "#ffffff",
                 borderRadius: "var(--radius-xl)",
-                padding: "2rem",
+                padding: "2.5rem 2rem",
                 width: "100%",
                 maxWidth: "380px",
-                border: "1px solid var(--border-light)",
-                boxShadow: "var(--shadow-xl)",
+                border: "1px solid rgba(0, 0, 0, 0.08)",
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                 textAlign: "center",
-                color: "var(--text-primary)",
+                color: "#1e293b",
               }}
             >
               <div
                 style={{
-                  fontSize: "3rem",
+                  fontSize: "3.5rem",
                   marginBottom: "1rem",
-                  background: "linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
                 }}
               >
                 🛒
               </div>
-              <h3 style={{ margin: "0 0 1rem 0", fontWeight: "700" }}>Confirm Add</h3>
-              <p style={{ margin: "0 0 1.5rem 0", lineHeight: "1.6", color: "var(--text-secondary)" }}>
+              <h3 style={{ margin: "0 0 1rem 0", fontWeight: "700", color: "#0f172a", fontSize: "1.5rem" }}>Confirm Add</h3>
+              <p style={{ margin: "0 0 2rem 0", lineHeight: "1.6", color: "#475569", fontSize: "0.95rem" }}>
                 <strong>{pendingProduct.name}</strong> will be added to your cart. Do you want to confirm?
               </p>
               <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
@@ -254,6 +256,9 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
                     borderRadius: "var(--radius-lg)",
                     fontWeight: "600",
                     margin: 0,
+                    background: "#f1f5f9",
+                    color: "#475569",
+                    border: "1px solid #cbd5e1",
                   }}
                 >
                   Cancel
@@ -267,6 +272,9 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
                     borderRadius: "var(--radius-lg)",
                     fontWeight: "600",
                     margin: 0,
+                    background: "linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)",
+                    color: "#ffffff",
+                    border: "none",
                   }}
                 >
                   OK
@@ -305,28 +313,28 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               style={{
-                background: "rgba(30, 30, 30, 0.95)",
+                background: "#ffffff",
                 borderRadius: "var(--radius-xl)",
-                padding: "2rem",
+                padding: "2.5rem 2rem",
                 width: "100%",
                 maxWidth: "380px",
-                border: "1px solid var(--border-light)",
-                boxShadow: "var(--shadow-xl)",
+                border: "1px solid rgba(0, 0, 0, 0.08)",
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                 textAlign: "center",
-                color: "var(--text-primary)",
+                color: "#1e293b",
               }}
             >
               <div
                 style={{
-                  fontSize: "3rem",
+                  fontSize: "3.5rem",
                   marginBottom: "1rem",
                   color: "var(--warning-color)",
                 }}
               >
                 ⚠️
               </div>
-              <h3 style={{ margin: "0 0 1rem 0", fontWeight: "700" }}>Already in Cart</h3>
-              <p style={{ margin: "0 0 1.5rem 0", lineHeight: "1.6", color: "var(--text-secondary)" }}>
+              <h3 style={{ margin: "0 0 1rem 0", fontWeight: "700", color: "#0f172a", fontSize: "1.5rem" }}>Already in Cart</h3>
+              <p style={{ margin: "0 0 2rem 0", lineHeight: "1.6", color: "#475569", fontSize: "0.95rem" }}>
                 This is already in your cart. If you want, you can increase the quantity by going inside the cart.
               </p>
               <button
@@ -338,6 +346,9 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
                   borderRadius: "var(--radius-lg)",
                   fontWeight: "600",
                   margin: 0,
+                  background: "linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%)",
+                  color: "#ffffff",
+                  border: "none",
                 }}
               >
                 OK
