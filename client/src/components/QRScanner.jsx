@@ -71,6 +71,18 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
   const handleScanResult = async (data) => {
     if (data === lastScanned) return
 
+    // Check if item is already in cart to display notice smoothly and silently
+    if (isItemInCart(data)) {
+      setLastScanned(data)
+      setScanStatus("duplicate")
+
+      setTimeout(() => {
+        setScanStatus("idle")
+        setLastScanned("")
+      }, 3000)
+      return
+    }
+
     setLastScanned(data)
     setScanStatus("scanning")
     playBeepSound()
@@ -254,7 +266,7 @@ const QRScannerComponent = ({ isActive = true, onProductAdded }) => {
                 <div className="status-icon">
                   <FontAwesomeIcon icon={faCircleExclamation} style={{ color: "var(--warning-color)" }} />
                 </div>
-                <p>Product already in cart</p>
+                <p>Product is already in the cart. If you need, you can increase the quantity.</p>
               </div>
             )}
           </motion.div>

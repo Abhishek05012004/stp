@@ -31,7 +31,8 @@
 }
 
 .hero-container {
-  max-width: 1200px;
+  max-width: 1440px;
+  width: 92%;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -331,7 +332,8 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
-  max-width: 1200px;
+  max-width: 1440px;
+  width: 92%;
   margin: 0 auto;
 }
 
@@ -460,7 +462,8 @@
 }
 
 .steps-container {
-  max-width: 900px;
+  max-width: 1200px;
+  width: 92%;
   margin: 0 auto;
   padding: 0 2rem;
 }
@@ -615,7 +618,8 @@
 }
 
 .cta-container {
-  max-width: 800px;
+  max-width: 1100px;
+  width: 92%;
   margin: 0 auto;
   text-align: center;
   position: relative;

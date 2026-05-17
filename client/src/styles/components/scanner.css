@@ -26,7 +26,8 @@
 
 .scanner-container {
   position: relative;
-  max-width: 500px;
+  max-width: 720px;
+  width: 95%;
   margin: 0 auto;
   background: var(--bg-secondary);
   border-radius: var(--radius-2xl);
@@ -39,7 +40,7 @@
 
 .scanner-video {
   width: 100%;
-  height: 400px;
+  height: 480px;
   object-fit: cover;
   filter: brightness(1.05) contrast(1.1);
   transition: all 0.3s ease;
@@ -151,7 +152,7 @@
 }
 
 .scanner-placeholder {
-  height: 400px;
+  height: 480px;
   display: flex;
   flex-direction: column;
   align-items: center;

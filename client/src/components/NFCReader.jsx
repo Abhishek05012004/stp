@@ -228,6 +228,20 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
         return
       }
 
+      // Check if item is already in cart to display notice smoothly and silently
+      if (isItemInCart(productId)) {
+        setLastRead(productId)
+        setNfcStatus("info")
+
+        setTimeout(() => {
+          if (isReading) {
+            setNfcStatus("reading")
+            setLastRead("")
+          }
+        }, 4000)
+        return
+      }
+
       setLastRead(productId)
       setNfcStatus("reading")
       playBeepSound()
@@ -416,7 +430,7 @@ const NFCReaderComponent = ({ isActive = true, onProductAdded }) => {
             : nfcStatus === "success"
               ? "✅ Product added successfully!"
               : nfcStatus === "info"
-                ? "ℹ️ This product is already in your cart"
+                ? "ℹ️ Product is already in the cart. If you need, you can increase the quantity."
                 : nfcStatus === "error"
                   ? "❌ Error reading tag"
                   : "Initializing NFC reader..."}
