@@ -1,5 +1,3 @@
-"use client"
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { CartProvider } from "./context/CartContext.jsx"
 import { AuthProvider, withAuth } from "./context/AuthContext.jsx"

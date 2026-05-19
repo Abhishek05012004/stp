@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 
 // Image utility functions for better image handling and error detection

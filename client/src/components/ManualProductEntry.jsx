@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useCart } from "../context/CartContext.jsx"
@@ -67,7 +65,7 @@ const ManualProductEntry = ({ onProductAdded }) => {
       setAllProducts(products)
 
       if (Object.keys(products).length === 0) {
-        showToastOnce("No products found. Please check server connection.", "error")
+        showToastOnce("No products found.", "error")
       } else {
         showToastOnce(`Loaded ${Object.keys(products).length} products successfully!`)
       }
@@ -513,12 +511,6 @@ const ManualProductEntry = ({ onProductAdded }) => {
                           <FontAwesomeIcon icon={faBoxOpen} />
                         </div>
                         <h3>Loading Products...</h3>
-                        <p>If products don't load, please check:</p>
-                        <ul style={{ textAlign: "left", margin: "1rem 0" }}>
-                          <li>Backend server is running</li>
-                          <li>Database connection is working</li>
-                          <li>Products exist in database</li>
-                        </ul>
                         <div className="loading-spinner" style={{ margin: "1rem auto" }}></div>
                       </>
                     ) : (

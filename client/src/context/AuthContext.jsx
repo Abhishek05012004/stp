@@ -1,5 +1,3 @@
-"use client"
-
 import { createContext, useContext, useReducer, useEffect } from "react"
 import { verifyAdminToken, clearAdminAuth, getAdminToken, getAdminData } from "../utils/authUtils"
 import { API_BASE_URL, getFullUrl } from "../utils/apiConfig"
@@ -187,9 +185,9 @@ export const AuthProvider = ({ children }) => {
       let errorMessage = "Network error. Please check your connection and try again."
 
       if (error.message.includes("Failed to fetch")) {
-        errorMessage = "Cannot connect to the server. Please make sure the backend is running."
+        errorMessage = "Cannot connect to the server. Please try again later."
       } else if (error.message.includes("HTTP error")) {
-        errorMessage = `Server error: ${error.message}`
+        errorMessage = "Server error occurred. Please try again."
       }
 
       dispatch({

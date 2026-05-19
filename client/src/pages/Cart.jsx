@@ -1,5 +1,3 @@
-"use client"
-
 import { Link, useNavigate } from "react-router-dom"
 import { useCart } from "../context/CartContext.jsx"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
