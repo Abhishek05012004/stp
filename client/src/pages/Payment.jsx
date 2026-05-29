@@ -21,7 +21,7 @@ import { generateEmailInvoiceHTML } from "../components/InvoiceTemplate"
 const Payment = () => {
   const { items, getTotal, clearCart } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("upi")
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("razorpay")
   const [paymentStatus, setPaymentStatus] = useState(null) // 'success', 'failed', null
   const [orderDetails, setOrderDetails] = useState(null)
   const [errorMessage, setErrorMessage] = useState("")
@@ -786,7 +786,7 @@ const Payment = () => {
         <div style={{ marginBottom: "2rem" }}>
           <h3>💳 Select Payment Method</h3>
 
-          <div
+          {/* <div
             style={{
               padding: "1rem",
               border: selectedPaymentMethod === "upi" ? "2px solid #4CAF50" : "2px solid #ddd",
@@ -815,7 +815,7 @@ const Payment = () => {
             <p style={{ fontSize: "12px", color: "#888", margin: "0.5rem 0 0 1.5rem" }}>
               UPI ID: asinghvns99-2@okicici | Amount: ₹{getFinalTotalINR()}
             </p>
-          </div>
+          </div> */}
 
           <div
             style={{
@@ -941,7 +941,7 @@ const Payment = () => {
           </div>
         )}
 
-        {selectedPaymentMethod === "upi" && !isProcessing && (
+        {/* {selectedPaymentMethod === "upi" && !isProcessing && (
           <div
             style={{
               marginTop: "1rem",
@@ -962,7 +962,7 @@ const Payment = () => {
               <li>Confirm payment status when prompted</li>
             </ol>
           </div>
-        )}
+        )} */}
       </div>
 
       {showEmailSuccessModal && (
